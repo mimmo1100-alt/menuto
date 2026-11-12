@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 !.env.example
+
+# test screenshots
+*.png
+!public/**/*.png
+!android-app/**/*.png
