@@ -22,6 +22,18 @@ export async function rateLimit(key: string, limit: number, windowSec: number): 
   }
 }
 
+/** Current count of a window without adding to it (for limits that only count failures). */
+export async function isLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
+  const ms = windowSec * 1000;
+  const windowStart = new Date(Math.floor(Date.now() / ms) * ms);
+  try {
+    const row = await db.rateHit.findUnique({ where: { key_windowStart: { key, windowStart } } });
+    return (row?.count ?? 0) >= limit;
+  } catch {
+    return false;
+  }
+}
+
 /** The visitor's IP as Vercel reports it (first entry of x-forwarded-for). */
 export function clientIp(req: Request) {
   return (req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip") || "local").trim();

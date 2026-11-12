@@ -46,3 +46,6 @@ next-env.d.ts
 *.png
 !public/**/*.png
 !android-app/**/*.png
+# playwright
+/test-results/
+/playwright-report/

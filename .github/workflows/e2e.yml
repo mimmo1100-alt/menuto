@@ -1,0 +1,66 @@
+name: Tests
+
+# On every push and pull request: type check, lint, production build, then the end-to-end tests
+# (tests/e2e) against a throwaway Postgres. A red run means something customers or restaurants use broke.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["android-app/**", "docs/**", "**/*.md"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: menuto
+          POSTGRES_PASSWORD: menuto
+          POSTGRES_DB: menuto_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U menuto" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://menuto:menuto@localhost:5432/menuto_test?schema=public
+      DIRECT_URL: postgresql://menuto:menuto@localhost:5432/menuto_test?schema=public
+      TEST_DATABASE_URL: postgresql://menuto:menuto@localhost:5432/menuto_test?schema=public
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Type check
+        run: npx tsc --noEmit -p .
+      - name: Lint
+        run: npx next lint
+      - name: Database migrations
+        run: npx prisma migrate deploy
+      - name: Production build
+        run: npm run build
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end tests
+        run: npx playwright test
+      - name: Keep the report when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

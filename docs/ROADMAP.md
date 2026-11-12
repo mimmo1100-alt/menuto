@@ -18,6 +18,7 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 | Ordering at the table | `/dashboard/tables`: turn on, payment at the table, add/rename/disable tables, print QR cards (A4, 6 per page, save as PDF). QR opens `/r/[slug]?t=code`: straight to the menu, only the first name + payment, order arrives with the table in big type (kitchen screen, receipts, restaurant email) | API checks (fake table name ignored, unknown/disabled table refused); Playwright customer phone it/ar, kitchen, tables page, print PDF |
 | Go-live essentials | Forgot password (1-hour link) + change password; Team page (owner adds/removes owners and staff; staff see only Orders and Team); rate limits (login, reset, orders, quotes); privacy notice + order terms per restaurant (`/r/[slug]/privacy`, `/terms`, it/en) with legal details in Settings; nightly encrypted DB backup (GitHub Actions, `docs/BACKUP.md`) | API + Playwright; backup dump→encrypt→restore tested locally (not yet on GitHub: needs the secrets) |
 | Payment methods | Cash, card/Bancomat (at pickup, on delivery with the POS, at the table), Satispay (paid in the app on receipt), per service; "Online payment" shown in Settings as coming soon | Playwright customer checkout + kitchen; server refuses a method the restaurant turned off |
+| Automatic tests | 20 Playwright end-to-end tests in `tests/e2e` + GitHub Actions on every push (type check, lint, build, tests). Found a real bug on the first run (Tables page couldn't save with 3 payment methods) | Run twice locally, all green |
 | Hosting prep | Migrations on deploy, `/setup` first run | Production build on an empty DB |
 
 ## Waiting on the owner
@@ -32,9 +33,10 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 
 ## Next (in this order)
 
-1. Turn the Playwright scripts into `tests/e2e` + CI.
-2. After March: online payment when ordering (card via Stripe and/or Satispay Business API), as a paid add-on the restaurant turns on. The owner decided (12 Nov 2026) that for now payment happens on receipt: cash, card/Bancomat with the POS, Satispay.
-3. Later, nice to have: delete/export one customer's data from the dashboard (GDPR requests are handled by hand until then).
+1. **Real-world test** once the owner has deployed: ordering page on real phones, table QR scanned with a camera, Android app + Epson printer, emails through Resend. Fix what it shows.
+2. Before going live with each restaurant: import its menu from GloriaFood, fill hours, delivery areas, payments and legal details, print table QR codes.
+3. After March: online payment when ordering (card via Stripe and/or Satispay Business API), as a paid add-on the restaurant turns on. The owner decided (12 Nov 2026) that for now payment happens on receipt: cash, card/Bancomat with the POS, Satispay.
+4. Later, nice to have: delete/export one customer's data from the dashboard (GDPR requests are handled by hand until then).
 
 Later (after March 2027): table reservations. The owner's 6 restaurants don't use reservations in GloriaFood (owner, 12 Nov 2026).
 

@@ -54,4 +54,5 @@ The first chat (12 November 2026), in order. A new session should read this, the
 - The owner said their restaurants don't use table reservations: moved after March.
 - Built the **go-live essentials**: password reset and change, Team page with staff accounts, rate limiting, privacy notice and order terms per restaurant, nightly encrypted database backup.
 - Payment methods like GloriaFood plus **Satispay**: cash, card/Bancomat with the POS, Satispay, all paid on receipt. Online payment stays "coming soon" in Settings (owner decision: not now).
-- **Next:** automatic tests (`tests/e2e` + CI).
+- **Automatic tests**: 20 Playwright tests + GitHub Actions. They found a bug from the Satispay change (Tables page limited to 2 payment methods), fixed. Login lockout now counts only failed attempts.
+- **Next:** the owner deploys on Vercel and tests on real phones and the Epson printer; then fix what that shows.

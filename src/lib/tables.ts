@@ -6,7 +6,7 @@ const PAY = ["cash", "card_table", "satispay"] as const;
 
 export const tablesSchema = z.object({
   dineIn: z.boolean(),
-  payments: z.array(z.enum(PAY)).max(2),
+  payments: z.array(z.enum(PAY)).max(PAY.length),
   tables: z.array(z.object({ id: z.string().max(40), name: z.string().trim().min(1).max(20), active: z.boolean() })).max(300),
 });
 export type TablesEdit = z.infer<typeof tablesSchema>;
