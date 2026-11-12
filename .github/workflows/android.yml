@@ -1,0 +1,41 @@
+name: Android app
+
+on:
+  push:
+    branches: [main]
+    paths: ["android-app/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - name: Build APK
+        working-directory: android-app
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+        run: gradle --no-daemon assembleRelease
+      - name: Rename APK
+        run: cp android-app/app/build/outputs/apk/release/app-release.apk menuto-ordini-${{ github.run_number }}.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: menuto-ordini-apk
+          path: menuto-ordini-*.apk
+      - name: Publish as a release (download link for the phone)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-v0.1.${{ github.run_number }}
+          name: Menuto Ordini 0.1.${{ github.run_number }}
+          body: "App Android per ricevere e stampare gli ordini. Scarica il file .apk dal telefono e installalo."
+          files: menuto-ordini-*.apk

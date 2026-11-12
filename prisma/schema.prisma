@@ -310,6 +310,8 @@ model Order {
   acceptedAt    DateTime?
   readyAt       DateTime?
   rejectReason  String?
+  /// set when the orders app has printed this order (so it is printed once)
+  printedAt     DateTime?
   /// when a still-pending order becomes MISSED
   respondBy     DateTime?
   createdAt     DateTime    @default(now())
