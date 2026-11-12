@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PubCategory, PubItem } from "@/lib/menu";
 import type { DaySlots } from "@/lib/availability";
+import MapPicker, { geocode, type LatLng, type MapZone } from "./MapPicker";
+import { zoneFor } from "@/lib/geo";
 import { DAYKEYS, LANGS, money as fmtMoney, pickLang, t as tt, tr, type Lang } from "@/lib/i18n";
 
 type Svc = "PICKUP" | "DELIVERY" | "DINEIN";
@@ -12,7 +14,8 @@ export type PageData = {
     slug: string; name: string; address: string; phone: string; currency: string; coverImage: string | null; imprint: string | null;
     taxIncluded: boolean; taxName: string; taxRateBp: number;
     services: Svc[]; payments: Record<string, string[]>;
-    zones: { id: string; name: string; minOrder: number; fee: number }[];
+    zones: (MapZone & { minOrder: number; fee: number })[];
+    center: LatLng; allowOutside: boolean;
     hours: { days: number[]; from: string; to: string; service: string | null }[];
     accepting: boolean; paused: string | null; openNow: boolean;
     asap: Record<string, boolean>; slots: Record<string, DaySlots[]>; todayYmd: string;
@@ -44,7 +47,7 @@ export default function OrderApp({ data }: { data: PageData }) {
   const [contact, setContact] = useState<Contact | null>(null);
   const [type, setType] = useState<Svc | null>(null);
   const [address, setAddress] = useState<Address | null>(null);
-  const [zoneId, setZoneId] = useState<string | null>(null);
+  const [pin, setPin] = useState<LatLng | null>(null);
   const [when, setWhen] = useState<When | null>(null);
   const [pay, setPay] = useState<string | null>(null);
   const [editing, setEditing] = useState<Step | null>("contact");
@@ -65,7 +68,7 @@ export default function OrderApp({ data }: { data: PageData }) {
   useEffect(() => {
     const saved = load<Lang | null>("menuto.lang", null);
     setLang(saved && LANGS.includes(saved) ? saved : pickLang(navigator.languages, data.initialLang));
-    const retry = new URLSearchParams(location.search).get("retry") === "1";
+    const retry = new URLSearchParams(window.location.search).get("retry") === "1";
     setCart(retry ? load<Line[]>(`${cartKey}.last`, []) : load<Line[]>(cartKey, []));
     if (retry) setScreen("checkout");
     const c = load<Contact | null>("menuto.contact", null);
@@ -98,11 +101,11 @@ export default function OrderApp({ data }: { data: PageData }) {
   }
   const subtotal = validCart.reduce((a, l) => a + lineUnit(l) * l.qty, 0);
   const count = validCart.reduce((a, l) => a + l.qty, 0);
-  const zone = R.zones.find((z) => z.id === zoneId) ?? null;
+  const zone = pin ? zoneFor(R.zones, pin.lat, pin.lng) : null;
   const minOrder = type === "DELIVERY" && zone ? zone.minOrder : 0;
 
   // server quote (authoritative totals, validates coupon) while on checkout
-  const quoteBody = JSON.stringify({ lines: validCart.map(({ itemId, sizeId, optionIds, qty }) => ({ itemId, sizeId, optionIds, qty })), type: type ?? R.services[0], zoneId, coupon: coupon ?? undefined });
+  const quoteBody = JSON.stringify({ lines: validCart.map(({ itemId, sizeId, optionIds, qty }) => ({ itemId, sizeId, optionIds, qty })), type: type ?? R.services[0], location: type === "DELIVERY" ? pin : null, coupon: coupon ?? undefined });
   useEffect(() => {
     if (screen !== "checkout" || !validCart.length) return;
     const ac = new AbortController();
@@ -120,7 +123,7 @@ export default function OrderApp({ data }: { data: PageData }) {
   const totals: Totals = serverTotals ?? { subtotal, discount: 0, deliveryFee: zone && type === "DELIVERY" ? zone.fee : 0, tax: 0, total: subtotal + (zone && type === "DELIVERY" ? zone.fee : 0), couponCode: null };
 
   const stepDone = (s: Step) =>
-    s === "contact" ? !!contact : s === "type" ? !!type && (type !== "DELIVERY" || (!!address && (!R.zones.length || !!zoneId))) : s === "time" ? !!when : !!pay;
+    s === "contact" ? !!contact : s === "type" ? !!type && (type !== "DELIVERY" || (!!address && (!R.zones.length || (!!pin && (!!zone || R.allowOutside))))) : s === "time" ? !!when : !!pay;
 
   function go(s: typeof screen) {
     setScreen(s); setSheet(null);
@@ -176,9 +179,11 @@ export default function OrderApp({ data }: { data: PageData }) {
       const ty = v("type") as Svc;
       if (ty === "DELIVERY") {
         const a = { street: v("street"), city: v("city"), more: v("more") };
-        const z = v("zone") || null;
-        if (!a.street || !a.city || (R.zones.length && !z)) return setStepErr(t("fillRequired"));
-        setAddress(a); setZoneId(z);
+        const lat = Number(fd.get("lat")), lng = Number(fd.get("lng"));
+        const loc = Number.isFinite(lat) && Number.isFinite(lng) && fd.get("lat") ? { lat, lng } : null;
+        if (!a.street || !a.city) return setStepErr(t("fillRequired"));
+        if (R.zones.length && (!loc || (!zoneFor(R.zones, loc.lat, loc.lng) && !R.allowOutside))) return setStepErr(t("outsideArea"));
+        setAddress(a); setPin(loc);
       }
       setType(ty);
       if (pay && !(R.payments[ty] ?? []).includes(pay)) { setPay(null); cleared.add("pay"); }
@@ -204,7 +209,7 @@ export default function OrderApp({ data }: { data: PageData }) {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({
           lines: validCart.map(({ itemId, sizeId, optionIds, qty, instructions }) => ({ itemId, sizeId, optionIds, qty, instructions: instructions || undefined })),
-          type, when, customer: contact, address: type === "DELIVERY" ? address : null, zoneId, payment: pay,
+          type, when, customer: contact, address: type === "DELIVERY" ? address : null, location: type === "DELIVERY" ? pin : null, payment: pay,
           comments: comments || undefined, coupon: coupon ?? undefined, lang,
         }),
       });
@@ -363,7 +368,7 @@ export default function OrderApp({ data }: { data: PageData }) {
                   <div key={s} className={`step${done && !isEd ? " done" : ""}${locked ? " locked" : ""}`}>
                     <h3><span className="n num">{done && !isEd ? "✓" : i + 1}</span>{titles[s]}</h3>
                     {isEd ? (
-                      <StepForm step={s} lang={lang} R={R} contact={contact} type={type} address={address} zoneId={zoneId} when={when} pay={pay} err={stepErr}
+                      <StepForm step={s} lang={lang} R={R} contact={contact} type={type} address={address} location={pin} when={when} pay={pay} err={stepErr}
                         onSubmit={(fd) => submitStep(s, fd)} money={money} />
                     ) : done ? (
                       <div className="sum"><div>{summary(s)}</div><button className="link" onClick={() => { setEditing(s); setStepErr(""); }}>{t("change")}</button></div>
@@ -478,7 +483,7 @@ function FragmentRow({ dt, dd }: { dt: string; dd: string }) {
 }
 
 function StepForm(p: {
-  step: Step; lang: Lang; R: PageData["restaurant"]; contact: Contact | null; type: Svc | null; address: Address | null; zoneId: string | null;
+  step: Step; lang: Lang; R: PageData["restaurant"]; contact: Contact | null; type: Svc | null; address: Address | null; location: LatLng | null;
   when: When | null; pay: string | null; err: string; onSubmit: (fd: FormData) => void; money: (c: number) => string;
 }) {
   const t = (k: string, v?: Record<string, string | number>) => tt(p.lang, k, v);
@@ -517,14 +522,7 @@ function StepForm(p: {
             <label className="f" htmlFor="a-street">{t("street")} *<input type="text" id="a-street" name="street" autoComplete="address-line1" defaultValue={a?.street} /></label>
             <label className="f" htmlFor="a-city">{t("city")} *<input type="text" id="a-city" name="city" autoComplete="address-level2" defaultValue={a?.city} /></label>
             <label className="f" htmlFor="a-more">{t("more")}<input type="text" id="a-more" name="more" defaultValue={a?.more} /></label>
-            {p.R.zones.length > 0 && (
-              <label className="f" htmlFor="a-zone">{t("zone")} *
-                <select id="a-zone" name="zone" defaultValue={p.zoneId ?? ""}>
-                  <option value="" disabled>—</option>
-                  {p.R.zones.map((z) => <option key={z.id} value={z.id}>{z.name} · {t("min")} {p.money(z.minOrder)} · {t("fee")} {p.money(z.fee)}</option>)}
-                </select>
-              </label>
-            )}
+            {p.R.zones.length > 0 && <DeliveryPin p={p} />}
           </div>
         )}
         {err}<div><button className="btn" type="submit">{t("save")}</button></div>
@@ -576,4 +574,31 @@ function Icon({ name }: { name: "menu" | "info" | "cart" }) {
   if (name === "menu") return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h10" /></svg>;
   if (name === "info") return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.5" strokeLinecap="round" /></svg>;
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M3 4h2.5l2.2 11h10.6L20.5 7H6.4" /><circle cx="9" cy="19.5" r="1.4" /><circle cx="17" cy="19.5" r="1.4" /></svg>;
+}
+
+function DeliveryPin({ p }: { p: { lang: Lang; R: PageData["restaurant"]; location: LatLng | null; money: (c: number) => string } }) {
+  const t = (k: string) => tt(p.lang, k);
+  const [loc, setLoc] = useState<LatLng | null>(p.location);
+  const [msg, setMsg] = useState("");
+  const zone = loc ? zoneFor(p.R.zones, loc.lat, loc.lng) : null;
+  async function find() {
+    const street = (document.getElementById("a-street") as HTMLInputElement | null)?.value ?? "";
+    const city = (document.getElementById("a-city") as HTMLInputElement | null)?.value ?? "";
+    if (!street.trim()) return;
+    setMsg("…");
+    const g = await geocode(`${street}, ${city}`);
+    if (g) { setLoc(g); setMsg(""); } else setMsg(t("notFound"));
+  }
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div><button type="button" className="btn sm ghost" onClick={find}>{t("findOnMap")}</button></div>
+      <MapPicker center={p.R.center} zones={p.R.zones} value={loc} onChange={setLoc} label={t("mapLabel")} />
+      <input type="hidden" name="lat" value={loc?.lat ?? ""} />
+      <input type="hidden" name="lng" value={loc?.lng ?? ""} />
+      <span className="small muted">{msg || t("pinHint")}</span>
+      {loc && (zone
+        ? <span className="pill ok" style={{ justifySelf: "start" }}>{zone.name} · {t("min")} {p.money(zone.minOrder)} · {t("fee")} {p.money(zone.fee)}</span>
+        : <span className={`pill ${p.R.allowOutside ? "warn" : "bad"}`} style={{ justifySelf: "start" }}>{t("outsideArea")}</span>)}
+    </div>
+  );
 }

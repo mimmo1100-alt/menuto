@@ -27,7 +27,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       currency: r.currency, coverImage: r.coverImage, imprint: r.partner?.imprint ?? null,
       taxIncluded: r.taxIncluded, taxName: r.taxName, taxRateBp: r.taxRateBp,
       services: svc, payments: r.payments as Record<string, string[]>,
-      zones: r.zones.map((z) => ({ id: z.id, name: z.name, minOrder: z.minOrder, fee: z.fee })),
+      zones: r.zones.map((z) => ({
+        id: z.id, name: z.name, color: z.color, kind: z.kind, centerLat: z.centerLat, centerLng: z.centerLng, radiusM: z.radiusM,
+        polygon: (z.polygon as [number, number][] | null) ?? null, minOrder: z.minOrder, fee: z.fee,
+      })),
+      center: { lat: r.lat ?? 45.4642, lng: r.lng ?? 9.19 }, allowOutside: r.allowOutsideZones,
       hours: r.hours.map((h) => ({ days: h.days, from: h.from, to: h.to, service: h.service })),
       accepting: r.acceptingOrders,
       paused: svc.every((s) => isPaused(r, s, now)) ? (r.pauseMessage || "") : null,

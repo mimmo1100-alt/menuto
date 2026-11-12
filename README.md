@@ -19,10 +19,13 @@ npm run dev
 
 - Menu with sizes, reusable option groups (min/max, required, preselected), half & half pizza, sold-out items/options, labels
 - Opening hours per service, special days, pause, scheduled orders with time slots (restaurant time zone)
-- Delivery areas with minimum order and fee, coupons, VAT included or added
+- Delivery areas drawn on a map (circle or free shape) with minimum order, fee and time; the customer drops a pin and the area is picked on the server (lowest minimum wins where areas overlap)
+- Coupons (percent, fixed, free delivery), VAT included or added
 - Checkout in 4 steps (details, order type, time, payment), prices recalculated and validated on the server
 - Language from the device (Italian, English, Arabic with right-to-left layout)
 - Live order tracking for the customer; restaurant screen with sound, 4-minute answer window, accept with prep time, decline/cancel with reason, ready, handed over
 - Night pre-orders wait silently until opening time
 
-Planned next: menu & settings editor, delivery map, emails, Android order-taking app with Epson printing, partner panel, GloriaFood menu import.
+Maps use OpenStreetMap tiles and Nominatim address search. Both are fine for testing; before going live with many restaurants, switch to a paid tile/geocoding provider (their free services have strict usage limits).
+
+Planned next: emails, Android order-taking app with Epson printing, partner panel, GloriaFood menu import.

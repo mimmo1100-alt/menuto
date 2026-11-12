@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import type { SettingsEdit } from "@/lib/settings-edit";
 import { pickLang, type Lang } from "@/lib/i18n";
 import DashNav from "./DashNav";
+import dynamic from "next/dynamic";
+
+const ZoneEditorMap = dynamic(() => import("./ZoneEditorMap"), { ssr: false, loading: () => <div className="empty">…</div> });
 
 type R = { id: string; name: string; slug: string; currency: string };
 type Svc = "PICKUP" | "DELIVERY" | "DINEIN";
@@ -22,7 +25,9 @@ const D: Record<Lang, Record<string, string>> = {
     accept: "Accettazione", autoAccept: "Accetta gli ordini automaticamente", prepPickup: "Tempo di preparazione ritiro (min)", prepDelivery: "Tempo di consegna (min)",
     payments: "Metodi di pagamento", cash: "Contanti", card_counter: "Carta al ritiro", card_courier: "Carta al fattorino", card_table: "Carta al tavolo",
     zones: "Zone di consegna", addZone: "Aggiungi zona", zName: "Nome zona", minOrder: "Ordine minimo €", fee: "Costo consegna €", zPrep: "Tempo (min, facoltativo)", radius: "Raggio (km)", hiddenZ: "Nascosta",
-    zoneNote: "La forma delle zone sulla mappa arriverà con l'editor mappa. Per ora i clienti scelgono la zona dall'elenco.",
+    zoneNote: "Trascina la R per spostare il ristorante. Seleziona una zona per modificarla: il cerchio si regola col punto centrale e quello sul bordo; nella forma libera clicca sulla mappa per aggiungere punti (clic destro su un punto per toglierlo).",
+    shape: "Forma", circle: "Cerchio", polygon: "Forma libera", clearShape: "Ricomincia la forma", editOnMap: "Modifica sulla mappa", editing: "In modifica",
+    outside: "Accetta ordini anche fuori dalle zone (senza costo di consegna)", mapLabel: "Mappa delle zone di consegna",
     coupons: "Codici sconto", addCoupon: "Aggiungi codice", code: "Codice", kind: "Tipo", percent: "Sconto %", fixed: "Sconto fisso €", free_delivery: "Consegna gratis", value: "Valore",
     onePer: "Una volta per cliente", active: "Attivo", validTo: "Valido fino al", used: "Usato",
     tax: "IVA", taxIncl: "I prezzi includono l'IVA", taxName: "Nome imposta", taxRate: "Aliquota %",
@@ -40,7 +45,9 @@ const D: Record<Lang, Record<string, string>> = {
     accept: "Accepting orders", autoAccept: "Accept orders automatically", prepPickup: "Pickup prep time (min)", prepDelivery: "Delivery time (min)",
     payments: "Payment methods", cash: "Cash", card_counter: "Card at pickup", card_courier: "Card to the delivery person", card_table: "Card at the table",
     zones: "Delivery areas", addZone: "Add area", zName: "Area name", minOrder: "Minimum order €", fee: "Delivery fee €", zPrep: "Time (min, optional)", radius: "Radius (km)", hiddenZ: "Hidden",
-    zoneNote: "Drawing areas on a map comes with the map editor. For now customers pick their area from the list.",
+    zoneNote: "Drag the R to move the restaurant. Select an area to edit it: a circle is set by its centre and edge points; for a free shape click the map to add corners (right-click a corner to remove it).",
+    shape: "Shape", circle: "Circle", polygon: "Free shape", clearShape: "Start the shape again", editOnMap: "Edit on map", editing: "Editing",
+    outside: "Also accept orders outside the areas (no delivery fee)", mapLabel: "Delivery areas map",
     coupons: "Coupon codes", addCoupon: "Add code", code: "Code", kind: "Type", percent: "Percent off", fixed: "Fixed amount €", free_delivery: "Free delivery", value: "Value",
     onePer: "Once per customer", active: "Active", validTo: "Valid until", used: "Used",
     tax: "VAT", taxIncl: "Prices include VAT", taxName: "Tax name", taxRate: "Rate %",
@@ -58,7 +65,9 @@ const D: Record<Lang, Record<string, string>> = {
     accept: "قبول الطلبات", autoAccept: "قبول الطلبات تلقائيًا", prepPickup: "وقت تجهيز الاستلام (دقيقة)", prepDelivery: "وقت التوصيل (دقيقة)",
     payments: "طرق الدفع", cash: "كاش", card_counter: "كارت عند الاستلام", card_courier: "كارت مع الطيار", card_table: "كارت على الترابيزة",
     zones: "مناطق التوصيل", addZone: "أضف منطقة", zName: "اسم المنطقة", minOrder: "الحد الأدنى €", fee: "رسوم التوصيل €", zPrep: "الوقت (دقيقة، اختياري)", radius: "نصف القطر (كم)", hiddenZ: "مخفية",
-    zoneNote: "رسم المناطق على الخريطة جاي مع محرر الخريطة. دلوقتي العميل بيختار منطقته من القايمة.",
+    zoneNote: "اسحب حرف R عشان تحرّك مكان المطعم. اختار منطقة عشان تعدّلها: الدايرة بتتظبط بالنقطة اللي في النص والنقطة اللي على الحافة، والشكل الحر بتدوس على الخريطة تضيف نقط (كليك يمين على النقطة يشيلها).",
+    shape: "الشكل", circle: "دايرة", polygon: "شكل حر", clearShape: "ابدأ الشكل من الأول", editOnMap: "عدّل على الخريطة", editing: "بتتعدل",
+    outside: "استقبل طلبات برّه المناطق كمان (من غير رسوم توصيل)", mapLabel: "خريطة مناطق التوصيل",
     coupons: "أكواد الخصم", addCoupon: "أضف كود", code: "الكود", kind: "النوع", percent: "خصم %", fixed: "خصم مبلغ €", free_delivery: "توصيل مجاني", value: "القيمة",
     onePer: "مرة واحدة لكل عميل", active: "مفعّل", validTo: "صالح لحد", used: "اتستخدم",
     tax: "الضريبة", taxIncl: "الأسعار شاملة الضريبة", taxName: "اسم الضريبة", taxRate: "النسبة %",
@@ -82,6 +91,7 @@ export default function SettingsEditor({ restaurant, restaurants, initial }: { r
   const [status, setStatus] = useState<"" | "saving" | "saved" | "error">("");
   const [errMsg, setErrMsg] = useState("");
   const [pauseFor, setPauseFor] = useState("60");
+  const [selZone, setSelZone] = useState<string | null>(null);
   const k = (x: string) => D[lang][x] ?? x;
   const dirty = JSON.stringify(s) !== JSON.stringify(saved);
 
@@ -250,18 +260,35 @@ export default function SettingsEditor({ restaurant, restaurants, initial }: { r
         {s.services.includes("DELIVERY") && (
           <section className="card"><h3>{k("zones")}</h3>
             <p className="small muted" style={{ margin: 0 }}>{k("zoneNote")}</p>
+            <ZoneEditorMap label={k("mapLabel")} center={{ lat: s.lat, lng: s.lng }} selectedId={selZone}
+              onCenter={(c) => edit((d) => { d.lat = c.lat; d.lng = c.lng; })}
+              zones={s.zones.map((z) => ({ id: z.id, name: z.name, color: z.color, kind: z.kind, centerLat: z.centerLat, centerLng: z.centerLng, radiusM: z.radiusM, polygon: z.polygon, hidden: z.hidden }))}
+              onZone={(id, patch) => edit((d) => { const z = d.zones.find((x) => x.id === id); if (z) Object.assign(z, patch); })} />
+            <label className="check"><input type="checkbox" checked={s.allowOutsideZones} onChange={(e) => edit((d) => { d.allowOutsideZones = e.target.checked; })} /> {k("outside")}</label>
             {s.zones.map((z, i) => (
-              <div className="hrow" key={z.id}>
+              <div className="hrow" key={z.id} style={selZone === z.id ? { borderColor: z.color, boxShadow: `0 0 0 1px ${z.color}` } : undefined}>
                 <input type="color" aria-label="Color" value={z.color} onChange={(e) => edit((d) => { d.zones[i].color = e.target.value; })} style={{ width: 44, height: 40, padding: 2 }} />
                 <Text id={`z-${z.id}-name`} label={k("zName")} value={z.name} max={40} onChange={(v) => edit((d) => { d.zones[i].name = v; })} />
                 <Money id={`z-${z.id}-min`} label={k("minOrder")} cents={z.minOrder} onChange={(c) => edit((d) => { d.zones[i].minOrder = c; })} />
                 <Money id={`z-${z.id}-fee`} label={k("fee")} cents={z.fee} onChange={(c) => edit((d) => { d.zones[i].fee = c; })} />
                 <Num id={`z-${z.id}-prep`} label={k("zPrep")} value={z.prepMin ?? ""} onChange={(v) => edit((d) => { d.zones[i].prepMin = v ? num(v, 1) : null; })} />
+                <label className="f" htmlFor={`z-${z.id}-kind`}>{k("shape")}
+                  <select id={`z-${z.id}-kind`} value={z.kind} onChange={(e) => edit((d) => {
+                    const zz = d.zones[i]; zz.kind = e.target.value as "circle" | "polygon";
+                    if (zz.kind === "circle" && (zz.centerLat == null || !zz.radiusM)) { zz.centerLat = d.lat; zz.centerLng = d.lng; zz.radiusM = 3000; }
+                    if (zz.kind === "polygon") zz.polygon = zz.polygon ?? [];
+                  })}>
+                    <option value="circle">{k("circle")}</option><option value="polygon">{k("polygon")}</option>
+                  </select>
+                </label>
+                {z.kind === "circle" && z.radiusM != null && <span className="small muted num">{(z.radiusM / 1000).toFixed(2)} km</span>}
+                {z.kind === "polygon" && <button className="link" onClick={() => edit((d) => { d.zones[i].polygon = []; })}>{k("clearShape")}</button>}
+                <button className={`btn sm ${selZone === z.id ? "" : "ghost"}`} onClick={() => setSelZone(selZone === z.id ? null : z.id)}>{selZone === z.id ? k("editing") : k("editOnMap")}</button>
                 <label className="check"><input type="checkbox" checked={z.hidden} onChange={(e) => edit((d) => { d.zones[i].hidden = e.target.checked; })} /> {k("hiddenZ")}</label>
                 <button className="link" onClick={() => edit((d) => { d.zones.splice(i, 1); })}>{k("remove")}</button>
               </div>
             ))}
-            <div><button className="btn sm ghost" onClick={() => edit((d) => { d.zones.push({ id: newId(), name: "", color: "#2c7a3c", minOrder: 1000, fee: 200, prepMin: null, hidden: false, radiusM: 3000 }); })}>+ {k("addZone")}</button></div>
+            <div><button className="btn sm ghost" onClick={() => { const id = newId(); edit((d) => { d.zones.push({ id, name: "", color: "#2c7a3c", minOrder: 1000, fee: 200, prepMin: null, hidden: false, kind: "circle", centerLat: d.lat, centerLng: d.lng, radiusM: 3000, polygon: null }); }); setSelZone(id); }}>+ {k("addZone")}</button></div>
           </section>
         )}
 

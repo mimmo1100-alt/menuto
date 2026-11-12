@@ -4,6 +4,7 @@ import { db } from "./db";
 import { loadRestaurant, publicMenu, type FullRestaurant } from "./menu";
 import { computeTotals, couponUsable, findItem, OrderError, priceLine, type PricedLine } from "./pricing";
 import { nextOpening, validateWhen } from "./availability";
+import { zoneFor } from "./geo";
 
 export const RESPOND_MINUTES = 4;
 
@@ -20,7 +21,7 @@ export const orderSchema = z.object({
     email: z.string().trim().email().max(120), phone: z.string().trim().min(6).max(30), marketingOk: z.boolean().optional(),
   }),
   address: z.object({ street: z.string().trim().min(2).max(120), city: z.string().trim().min(1).max(80), more: z.string().trim().max(160).optional() }).nullish(),
-  zoneId: z.string().nullish(),
+  location: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).nullish(),
   table: z.string().trim().max(20).nullish(),
   payment: z.string().min(1).max(30),
   comments: z.string().trim().max(500).optional(),
@@ -28,7 +29,7 @@ export const orderSchema = z.object({
   lang: z.enum(["it", "en", "ar"]).default("it"),
 });
 export type OrderInput = z.infer<typeof orderSchema>;
-export const quoteSchema = orderSchema.pick({ lines: true, type: true, zoneId: true, coupon: true });
+export const quoteSchema = orderSchema.pick({ lines: true, type: true, location: true, coupon: true });
 
 export async function quote(r: FullRestaurant, input: z.infer<typeof quoteSchema>) {
   const menu = publicMenu(r);
@@ -38,8 +39,10 @@ export async function quote(r: FullRestaurant, input: z.infer<typeof quoteSchema
     return priceLine(item, l);
   });
   const isDelivery = input.type === "DELIVERY";
-  const zone = isDelivery ? r.zones.find((z) => z.id === input.zoneId) ?? null : null;
-  if (isDelivery && r.zones.length && !zone) throw new OrderError("zone");
+  // delivery area comes from the customer's pin; outside every area is refused unless the restaurant allows it
+  const loc = input.location;
+  const zone = isDelivery && loc ? zoneFor(r.zones, loc.lat, loc.lng) : null;
+  if (isDelivery && r.zones.length && !zone && !(loc && r.allowOutsideZones)) throw new OrderError("zone");
   let coupon = null;
   if (input.coupon) {
     const c = await db.coupon.findUnique({ where: { restaurantId_code: { restaurantId: r.id, code: input.coupon.toUpperCase() } } });
@@ -77,7 +80,7 @@ export async function createOrder(slug: string, raw: unknown) {
             asap: input.when.asap, fulfillAt,
             firstName: input.customer.firstName, lastName: input.customer.lastName, email: input.customer.email,
             phone: input.customer.phone, marketingOk: !!input.customer.marketingOk,
-            address: service === "DELIVERY" ? input.address! : undefined, zoneId: zone?.id, table: input.table ?? null,
+            address: service === "DELIVERY" ? { ...input.address!, ...(input.location ?? {}) } : undefined, zoneId: zone?.id, table: input.table ?? null,
             payment: input.payment, comments: input.comments || null, lang: input.lang, couponCode: totals.couponCode,
             subtotal: totals.subtotal, discount: totals.discount, deliveryFee: totals.deliveryFee, tax: totals.tax, total: totals.total,
             prepMin, acceptedAt: auto ? now : null,

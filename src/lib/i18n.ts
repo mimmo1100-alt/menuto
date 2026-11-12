@@ -52,6 +52,7 @@ const it: Dict = {
   rTooBusy: "Siamo troppo pieni", rClosed: "Siamo chiusi", rItem: "Un prodotto non è disponibile", rArea: "Indirizzo fuori zona", rOther: "Altro motivo",
   spicy: "Piccante", vegetarian: "Vegetariano", vegan: "Vegano", halal: "Halal", raw: "Crudo",
   errClosed: "Il ristorante non accetta ordini per questo orario.", errItem: "Un prodotto non è più disponibile. Aggiorna il carrello.",
+  findOnMap: "Trova l'indirizzo sulla mappa", pinHint: "Sposta il segnaposto sul punto esatto della consegna.", outsideArea: "Questo indirizzo è fuori dalle nostre zone di consegna.", notFound: "Indirizzo non trovato: sposta il segnaposto a mano.", mapLabel: "Mappa: punto di consegna",
   errMin: "Non hai raggiunto l'ordine minimo per la consegna.", errGeneric: "L'ordine non è stato inviato. Riprova.",
 };
 const en: Dict = {
@@ -81,6 +82,7 @@ const en: Dict = {
   rTooBusy: "We're too busy", rClosed: "We're closed", rItem: "An item is unavailable", rArea: "Address outside our area", rOther: "Other reason",
   spicy: "Spicy", vegetarian: "Vegetarian", vegan: "Vegan", halal: "Halal", raw: "Raw",
   errClosed: "The restaurant isn't taking orders for this time.", errItem: "An item is no longer available. Please update your cart.",
+  findOnMap: "Find the address on the map", pinHint: "Move the pin to the exact delivery spot.", outsideArea: "This address is outside our delivery areas.", notFound: "Address not found: move the pin by hand.", mapLabel: "Map: delivery spot",
   errMin: "Your order is below the delivery minimum.", errGeneric: "The order wasn't sent. Try again.",
 };
 const ar: Dict = {
@@ -110,6 +112,7 @@ const ar: Dict = {
   rTooBusy: "ضغط شغل كبير", rClosed: "المطعم مغلق", rItem: "صنف غير متوفر", rArea: "العنوان خارج منطقة التوصيل", rOther: "سبب آخر",
   spicy: "حار", vegetarian: "نباتي", vegan: "نباتي صرف", halal: "حلال", raw: "نيء",
   errClosed: "المطعم لا يستقبل طلبات لهذا الوقت.", errItem: "صنف لم يعد متوفرًا. حدّث السلة.",
+  findOnMap: "حدد العنوان على الخريطة", pinHint: "حرّك الدبوس لمكان التوصيل بالظبط.", outsideArea: "العنوان ده برّه مناطق التوصيل بتاعتنا.", notFound: "مالقيناش العنوان: حرّك الدبوس بإيدك.", mapLabel: "الخريطة: مكان التوصيل",
   errMin: "طلبك أقل من الحد الأدنى للتوصيل.", errGeneric: "لم يُرسل الطلب. حاول مرة أخرى.",
 };
 export const DICT: Record<Lang, Dict> = { it, en, ar };

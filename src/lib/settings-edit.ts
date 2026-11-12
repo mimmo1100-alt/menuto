@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { db } from "./db";
 
 const hhmm = z.string().regex(/^\d{2}:\d{2}$/);
@@ -9,6 +10,7 @@ const PAY = ["cash", "card_counter", "card_courier", "card_table"] as const;
 
 export const settingsSchema = z.object({
   name: z.string().trim().min(1).max(80), phone: z.string().trim().min(3).max(30),
+  lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), allowOutsideZones: z.boolean(),
   address: z.string().trim().min(1).max(120), city: z.string().trim().min(1).max(80), postcode: z.string().trim().max(12),
   defaultLang: z.enum(["it", "en", "ar"]),
   acceptingOrders: z.boolean(),
@@ -27,8 +29,10 @@ export const settingsSchema = z.object({
   })).max(100),
   zones: z.array(z.object({
     id: z.string(), name: z.string().trim().min(1).max(40), color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-    minOrder: cents, fee: cents, prepMin: z.number().int().min(1).max(600).nullable(), hidden: z.boolean(), radiusM: z.number().int().min(100).max(50000).nullable(),
-  })).max(30),
+    minOrder: cents, fee: cents, prepMin: z.number().int().min(1).max(600).nullable(), hidden: z.boolean(),
+    kind: z.enum(["circle", "polygon"]), centerLat: z.number().nullable(), centerLng: z.number().nullable(), radiusM: z.number().int().min(100).max(50000).nullable(),
+    polygon: z.array(z.tuple([z.number(), z.number()])).max(200).nullable(),
+  }).refine((z) => (z.kind === "circle" ? z.centerLat != null && z.centerLng != null && z.radiusM != null : (z.polygon?.length ?? 0) >= 3), { message: "shape" })).max(30),
   coupons: z.array(z.object({
     id: z.string(), code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{4,20}$/), kind: z.enum(["percent", "fixed", "free_delivery"]),
     value: z.number().int().min(0).max(1_000_000), minOrder: cents, onePerCustomer: z.boolean(), active: z.boolean(), validTo: ymd.nullable(),
@@ -43,7 +47,7 @@ export async function loadSettings(restaurantId: string): Promise<SettingsEdit &
   });
   const pay = r.payments as Record<string, string[]>;
   return {
-    name: r.name, phone: r.phone, address: r.address, city: r.city, postcode: r.postcode ?? "", defaultLang: r.defaultLang as "it",
+    name: r.name, phone: r.phone, lat: r.lat ?? 45.4642, lng: r.lng ?? 9.19, allowOutsideZones: r.allowOutsideZones, address: r.address, city: r.city, postcode: r.postcode ?? "", defaultLang: r.defaultLang as "it",
     acceptingOrders: r.acceptingOrders,
     pause: { until: r.pausedUntil && r.pausedUntil > new Date() ? r.pausedUntil.toISOString() : null, services: r.pausedServices, message: r.pauseMessage ?? "" },
     services: r.services,
@@ -53,7 +57,11 @@ export async function loadSettings(restaurantId: string): Promise<SettingsEdit &
     taxIncluded: r.taxIncluded, taxName: r.taxName, taxRateBp: r.taxRateBp, notifyEmails: r.notifyEmails,
     hours: r.hours.map((h) => ({ service: h.service, days: h.days, from: h.from, to: h.to })),
     specialDays: r.specialDays.map((s) => ({ name: s.name, dateFrom: s.dateFrom, dateTo: s.dateTo, service: s.service, open: s.open, from: s.from, to: s.to, message: s.message ?? "" })),
-    zones: r.zones.map((z) => ({ id: z.id, name: z.name, color: z.color, minOrder: z.minOrder, fee: z.fee, prepMin: z.prepMin, hidden: z.hidden, radiusM: z.radiusM })),
+    zones: r.zones.map((z) => ({
+      id: z.id, name: z.name, color: z.color, minOrder: z.minOrder, fee: z.fee, prepMin: z.prepMin, hidden: z.hidden,
+      kind: (z.kind === "polygon" ? "polygon" : "circle") as "circle", centerLat: z.centerLat, centerLng: z.centerLng, radiusM: z.radiusM,
+      polygon: (z.polygon as [number, number][] | null) ?? null,
+    })),
     coupons: r.coupons.map((c) => ({ id: c.id, code: c.code, kind: c.kind as "percent", value: c.value, minOrder: c.minOrder, onePerCustomer: c.onePerCustomer, active: c.active, validTo: c.validTo ? c.validTo.toISOString().slice(0, 10) : null })),
     uses: Object.fromEntries(r.coupons.map((c) => [c.id, c.uses])),
   };
@@ -63,10 +71,10 @@ export async function saveSettings(restaurantId: string, s: SettingsEdit) {
   const codes = s.coupons.map((c) => c.code);
   if (new Set(codes).size !== codes.length) throw new Error("duplicate_coupon");
   await db.$transaction(async (tx) => {
-    const r = await tx.restaurant.update({
+    await tx.restaurant.update({
       where: { id: restaurantId },
       data: {
-        name: s.name, phone: s.phone, address: s.address, city: s.city, postcode: s.postcode || null, defaultLang: s.defaultLang,
+        name: s.name, phone: s.phone, lat: s.lat, lng: s.lng, allowOutsideZones: s.allowOutsideZones, address: s.address, city: s.city, postcode: s.postcode || null, defaultLang: s.defaultLang,
         acceptingOrders: s.acceptingOrders,
         pausedUntil: s.pause.until ? new Date(s.pause.until) : null, pausedServices: s.pause.services, pauseMessage: s.pause.message || null,
         services: s.services, payments: s.payments,
@@ -83,10 +91,11 @@ export async function saveSettings(restaurantId: string, s: SettingsEdit) {
     const zoneIds = new Set((await tx.deliveryZone.findMany({ where: { restaurantId }, select: { id: true } })).map((z) => z.id));
     const keepZones: string[] = [];
     for (const [i, z] of s.zones.entries()) {
-      const data = { name: z.name, color: z.color, minOrder: z.minOrder, fee: z.fee, prepMin: z.prepMin, hidden: z.hidden, position: i, radiusM: z.radiusM };
-      const row = zoneIds.has(z.id)
-        ? await tx.deliveryZone.update({ where: { id: z.id }, data })
-        : await tx.deliveryZone.create({ data: { ...data, restaurantId, kind: "circle", centerLat: r.lat, centerLng: r.lng, radiusM: z.radiusM ?? 3000 } });
+      const data = {
+        name: z.name, color: z.color, minOrder: z.minOrder, fee: z.fee, prepMin: z.prepMin, hidden: z.hidden, position: i,
+        kind: z.kind, centerLat: z.centerLat, centerLng: z.centerLng, radiusM: z.radiusM, polygon: z.polygon ?? Prisma.DbNull,
+      };
+      const row = zoneIds.has(z.id) ? await tx.deliveryZone.update({ where: { id: z.id }, data }) : await tx.deliveryZone.create({ data: { ...data, restaurantId } });
       keepZones.push(row.id);
     }
     await tx.deliveryZone.deleteMany({ where: { restaurantId, id: { notIn: keepZones } } });
