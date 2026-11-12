@@ -14,6 +14,7 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 | Partner panel | Restaurants + stats, add restaurant, all orders + CSV, branding | Playwright |
 | Android app | Background watcher, alarm, Bluetooth ESC/POS printing, print queue | Builds on CI; not yet run on a phone or printer |
 | GloriaFood import | Fetch Menu API v2 key or JSON file | Their public sample; not yet with a real key |
+| Sales reports | `/dashboard/reports`: today / yesterday / 7 / 30 days / month / custom; sales, orders, average, new vs returning customers, trend chart, payment method, order type, best sellers, busiest hours and days, lost orders, CSV. End-of-day email every morning (Vercel Cron 05:00 UTC, on/off in Settings) | Numbers checked against the DB; Playwright it/ar, desktop/phone; email only logged (no Resend key) |
 | Hosting prep | Migrations on deploy, `/setup` first run | Production build on an empty DB |
 
 ## Waiting on the owner
@@ -22,15 +23,15 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 2. Install the APK from the latest GitHub release on the restaurant phone; pair the Epson printer; test print.
 3. GloriaFood "Fetch Menu" key of the demo restaurant GUSTO GIUSTO, to test the import for real.
 4. Later: Resend account (emails), domain, Stripe (online payments).
+5. Optional, in Vercel → Settings → Environment Variables: `CRON_SECRET` (any long random text) so only Vercel can trigger the morning report.
 
 ## Next (in this order)
 
-1. Sales reports for restaurants (trend, by payment method, top items) and the end-of-day email.
-2. QR ordering at the table (per-table codes, PDF to print).
-3. Table reservations.
-4. Online payments with Stripe (paid add-on).
-5. Turn the Playwright scripts into `tests/e2e` + CI.
-6. Before the restaurants go live: rate limiting on public APIs, password reset, staff accounts from the dashboard, privacy/terms pages (GDPR), backups.
+1. QR ordering at the table (per-table codes, PDF to print).
+2. Table reservations.
+3. Online payments with Stripe (paid add-on).
+4. Turn the Playwright scripts into `tests/e2e` + CI.
+5. Before the restaurants go live: rate limiting on public APIs, password reset, staff accounts from the dashboard, privacy/terms pages (GDPR), backups.
 
 ## Known gaps
 

@@ -45,3 +45,9 @@ The first chat (12 November 2026), in order. A new session should read this, the
 - The first chat ended at about 78% of its memory; the owner asked to continue in a new chat.
 - **Waiting on the owner:** deploy on Vercel with Neon Postgres (5 steps in `docs/ROADMAP.md`), then install the APK and test with the Epson printer, and give a GloriaFood "Fetch Menu" key of the demo restaurant GUSTO GIUSTO to test the import for real.
 - **Next to build:** sales reports, then QR ordering at the table, table reservations, Stripe payments.
+
+## 7. Second chat (12 November 2026)
+
+- Repo attached to a new cloud session; read the notes and continued.
+- Built **sales reports** (`/dashboard/reports`) and the **end-of-day email** (sent every morning for the day before, through Vercel Cron in `vercel.json`; once per restaurant/day via the `DailyReportSent` table; switch in Settings → Emails).
+- **Next:** QR ordering at the table.
