@@ -99,7 +99,7 @@ ${kind !== "new_order" ? `<tr><td style="padding:0 24px 24px;color:#5d6455;font-
 export async function orderEmails(orderId: string, kind: EmailKind) {
   try {
     const o = await db.order.findUnique({ where: { id: orderId }, include: { items: true, restaurant: true } });
-    if (!o) return;
+    if (!o || o.email.endsWith("@menuto.invalid")) return; // test orders from the app
     if (kind === "new_order") {
       const lang = (o.restaurant.defaultLang as Lang) ?? "it";
       for (const to of o.restaurant.notifyEmails) {

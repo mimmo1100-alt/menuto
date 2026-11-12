@@ -14,9 +14,9 @@ type Order = {
 type R = { id: string; name: string; slug: string; currency: string };
 
 const K: Record<Lang, Record<string, string>> = {
-  it: { orders: "Ordini", tPending: "Nuovi", tActive: "In preparazione", tDone: "Chiusi", soundOn: "Suono attivo", soundOff: "Attiva suono", acceptIn: "Accetta, pronto tra (minuti):", reject: "Rifiuta", cancel: "Annulla ordine", markReady: "Pronto", complete: "Consegnato", reason: "Motivo", noOrders: "Nessun ordine qui.", newOrder: "Nuovo ordine", queued: "Pre-ordine: suonerà all'apertura", respond: "Rispondi entro", maps: "Apri in Maps", copy: "Copia dati", copied: "Copiato", for: "Per", offline: "Connessione persa. Riprovo…", missed: "Perso" },
-  en: { orders: "Orders", tPending: "New", tActive: "Preparing", tDone: "Closed", soundOn: "Sound on", soundOff: "Turn on sound", acceptIn: "Accept, ready in (minutes):", reject: "Decline", cancel: "Cancel order", markReady: "Ready", complete: "Handed over", reason: "Reason", noOrders: "No orders here.", newOrder: "New order", queued: "Pre-order: rings at opening time", respond: "Answer within", maps: "Open in Maps", copy: "Copy details", copied: "Copied", for: "For", offline: "Connection lost. Retrying…", missed: "Missed" },
-  ar: { orders: "الطلبات", tPending: "جديدة", tActive: "قيد التحضير", tDone: "منتهية", soundOn: "الصوت يعمل", soundOff: "شغّل الصوت", acceptIn: "اقبل، جاهز خلال (دقيقة):", reject: "رفض", cancel: "إلغاء الطلب", markReady: "جاهز", complete: "تم التسليم", reason: "السبب", noOrders: "لا توجد طلبات هنا.", newOrder: "طلب جديد", queued: "طلب مسبق: هيرن وقت الفتح", respond: "رد خلال", maps: "افتح في الخرائط", copy: "انسخ البيانات", copied: "تم النسخ", for: "موعد", offline: "الاتصال مقطوع. بنحاول تاني…", missed: "فات" },
+  it: { test: "Ordine di prova", testDone: "Ordine di prova creato", pause: "Pausa", resume: "Riprendi ordini", pausedUntil: "Ordini in pausa fino alle", m30: "30 min", h1: "1 ora", h2: "2 ore", stock: "Esauriti", available: "Disponibile", untilTomorrow: "Esaurito fino a domani", indefinite: "Esaurito", options: "Opzioni", printKitchen: "Stampa cucina", printCustomer: "Stampa cliente", settings: "Impostazioni app", autoPrint: "Stampa automatica quando accetti", apNone: "No", apKitchen: "Scontrino cucina", apCustomer: "Ricevuta cliente", apBoth: "Cucina + cliente", paper: "Carta", installHint: "Per usarla come app: menu del browser → Aggiungi a schermata Home. Tieni il telefono in carica e con il volume alto.", close: "Chiudi", orders: "Ordini", tPending: "Nuovi", tActive: "In preparazione", tDone: "Chiusi", soundOn: "Suono attivo", soundOff: "Attiva suono", acceptIn: "Accetta, pronto tra (minuti):", reject: "Rifiuta", cancel: "Annulla ordine", markReady: "Pronto", complete: "Consegnato", reason: "Motivo", noOrders: "Nessun ordine qui.", newOrder: "Nuovo ordine", queued: "Pre-ordine: suonerà all'apertura", respond: "Rispondi entro", maps: "Apri in Maps", copy: "Copia dati", copied: "Copiato", for: "Per", offline: "Connessione persa. Riprovo…", missed: "Perso" },
+  en: { test: "Test order", testDone: "Test order created", pause: "Pause", resume: "Resume orders", pausedUntil: "Orders paused until", m30: "30 min", h1: "1 hour", h2: "2 hours", stock: "Sold out", available: "Available", untilTomorrow: "Sold out until tomorrow", indefinite: "Sold out", options: "Options", printKitchen: "Print kitchen", printCustomer: "Print customer", settings: "App settings", autoPrint: "Print automatically when you accept", apNone: "No", apKitchen: "Kitchen ticket", apCustomer: "Customer receipt", apBoth: "Kitchen + customer", paper: "Paper", installHint: "To use it as an app: browser menu → Add to Home screen. Keep the phone charging with the volume up.", close: "Close", orders: "Orders", tPending: "New", tActive: "Preparing", tDone: "Closed", soundOn: "Sound on", soundOff: "Turn on sound", acceptIn: "Accept, ready in (minutes):", reject: "Decline", cancel: "Cancel order", markReady: "Ready", complete: "Handed over", reason: "Reason", noOrders: "No orders here.", newOrder: "New order", queued: "Pre-order: rings at opening time", respond: "Answer within", maps: "Open in Maps", copy: "Copy details", copied: "Copied", for: "For", offline: "Connection lost. Retrying…", missed: "Missed" },
+  ar: { test: "طلب تجريبي", testDone: "اتعمل طلب تجريبي", pause: "إيقاف", resume: "رجّع الطلبات", pausedUntil: "الطلبات متوقفة لحد", m30: "نص ساعة", h1: "ساعة", h2: "ساعتين", stock: "الخلصان", available: "متاح", untilTomorrow: "خلصان لحد بكره", indefinite: "خلصان", options: "الإضافات", printKitchen: "اطبع للمطبخ", printCustomer: "اطبع للعميل", settings: "إعدادات التطبيق", autoPrint: "اطبع تلقائي لما تقبل", apNone: "لا", apKitchen: "تذكرة المطبخ", apCustomer: "إيصال العميل", apBoth: "المطبخ + العميل", paper: "الورق", installHint: "عشان تستخدمه كتطبيق: قايمة المتصفح ← إضافة للشاشة الرئيسية. خلي الموبايل على الشاحن والصوت عالي.", close: "قفل", orders: "الطلبات", tPending: "جديدة", tActive: "قيد التحضير", tDone: "منتهية", soundOn: "الصوت يعمل", soundOff: "شغّل الصوت", acceptIn: "اقبل، جاهز خلال (دقيقة):", reject: "رفض", cancel: "إلغاء الطلب", markReady: "جاهز", complete: "تم التسليم", reason: "السبب", noOrders: "لا توجد طلبات هنا.", newOrder: "طلب جديد", queued: "طلب مسبق: هيرن وقت الفتح", respond: "رد خلال", maps: "افتح في الخرائط", copy: "انسخ البيانات", copied: "تم النسخ", for: "موعد", offline: "الاتصال مقطوع. بنحاول تاني…", missed: "فات" },
 };
 const REASONS = ["rTooBusy", "rClosed", "rItem", "rArea", "rOther"];
 
@@ -25,7 +25,12 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
   const [orders, setOrders] = useState<Order[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [tab, setTab] = useState<"pending" | "active" | "done">("pending");
+  const [tab, setTab] = useState<"pending" | "active" | "done" | "stock">("pending");
+  const [pause, setPause] = useState<{ pausedUntil: string | null } | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [autoPrint, setAutoPrint] = useState("none");
+  const [paper, setPaper] = useState("42");
+  const wake = useRef<WakeLockSentinel | null>(null);
   const [sound, setSound] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [toast, setToast] = useState("");
@@ -35,6 +40,10 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
   const fmt = (c: number) => money(c, lang, restaurant.currency);
   const time = (iso: string) => new Date(iso).toLocaleString(LOCALE[lang], { weekday: "short", hour: "2-digit", minute: "2-digit" });
 
+  useEffect(() => {
+    try { setAutoPrint(localStorage.getItem("menuto.autoPrint") ?? "none"); setPaper(localStorage.getItem("menuto.paper") ?? "42"); } catch { /* storage unavailable */ }
+    fetch(`/api/kitchen/${restaurant.id}/pause`).then((r) => r.json()).then(setPause).catch(() => {});
+  }, [restaurant.id]);
   useEffect(() => {
     const l = pickLang(navigator.languages, "it");
     setLang(l); document.documentElement.lang = l; document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
@@ -84,11 +93,38 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
     if (!res.ok && res.status !== 409) setToast(k("offline"));
     load();
   }
+  async function keepAwake() {
+    try { if ("wakeLock" in navigator && !wake.current) { wake.current = await navigator.wakeLock.request("screen"); wake.current.addEventListener("release", () => { wake.current = null; }); } } catch { /* not allowed */ }
+  }
+  useEffect(() => {
+    const again = () => { if (sound && document.visibilityState === "visible") keepAwake(); };
+    document.addEventListener("visibilitychange", again);
+    return () => document.removeEventListener("visibilitychange", again);
+  }, [sound]);
   function enableSound() {
-    if (sound) { setSound(false); return; }
+    if (sound) { setSound(false); wake.current?.release(); return; }
     try { actx.current = actx.current ?? new AudioContext(); actx.current.resume(); } catch { /* no audio */ }
     setSound(true);
+    keepAwake();
   }
+  const receiptUrl = (o: Order, t: string) => `/api/kitchen/${restaurant.id}/orders/${o.id}/receipt?t=${t}&cols=${paper}`;
+  function print(o: Order, t: string) { window.open(receiptUrl(o, t), "_blank"); }
+  async function accept(o: Order, prepMin: number) {
+    // open the print window inside the click, before awaiting, so the browser allows it
+    const which = autoPrint === "both" ? "kitchen,customer" : autoPrint;
+    const w = autoPrint !== "none" ? window.open("about:blank", "_blank") : null;
+    await act(o, { action: "accept", prepMin });
+    if (w) w.location.href = receiptUrl(o, which);
+  }
+  async function testOrder() {
+    const res = await fetch(`/api/kitchen/${restaurant.id}/test-order`, { method: "POST" });
+    if (res.ok) { setTab("pending"); setToast(k("testDone")); setTimeout(() => setToast(""), 1500); load(); }
+  }
+  async function setPaused(minutes: number) {
+    const res = await fetch(`/api/kitchen/${restaurant.id}/pause`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ minutes }) });
+    if (res.ok) { const j = await res.json(); setPause(j); }
+  }
+  const pausedUntil = pause?.pausedUntil && new Date(pause.pausedUntil).getTime() > now ? new Date(pause.pausedUntil) : null;
   async function copy(o: Order) {
     const text = [`#${o.number} ${o.firstName} ${o.lastName}`, o.phone, o.address ? `${o.address.street}, ${o.address.city}${o.address.more ? " · " + o.address.more : ""}` : ""].filter(Boolean).join("\n");
     try { await navigator.clipboard.writeText(text); setToast(k("copied")); setTimeout(() => setToast(""), 1500); } catch { /* clipboard blocked */ }
@@ -99,7 +135,7 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
     active: orders.filter((o) => o.status === "ACCEPTED" || o.status === "READY"),
     done: orders.filter((o) => ["COMPLETED", "REJECTED", "MISSED", "CANCELED"].includes(o.status)),
   };
-  const list = groups[tab];
+  const list = tab === "stock" ? [] : groups[tab];
 
   return (
     <>
@@ -108,7 +144,35 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
         <div className="kbar">
           <h2>{k("orders")} · {restaurant.name}</h2>
           <button className={`btn sm${sound ? " ok" : ""}`} onClick={enableSound}>{sound ? k("soundOn") : k("soundOff")}</button>
+          <button className="btn sm ghost" onClick={testOrder}>{k("test")}</button>
+          <button className="btn sm ghost" onClick={() => setShowSettings(!showSettings)} aria-expanded={showSettings}>{k("settings")}</button>
         </div>
+        <div className="hrow" style={{ marginBottom: 12 }}>
+          {pausedUntil ? (
+            <><span className="pill bad"><span className="dot" />{k("pausedUntil")} {pausedUntil.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+              <button className="btn sm" onClick={() => setPaused(0)}>{k("resume")}</button></>
+          ) : (
+            <><span className="small muted">{k("pause")}:</span>
+              {[[30, "m30"], [60, "h1"], [120, "h2"]].map(([m, l]) => <button key={m} className="btn sm ghost" onClick={() => setPaused(m as number)}>{k(l as string)}</button>)}</>
+          )}
+        </div>
+        {showSettings && (
+          <div className="card" style={{ padding: 16, marginBottom: 14, display: "grid", gap: 10 }}>
+            <div className="row2">
+              <label className="f" htmlFor="ap">{k("autoPrint")}
+                <select id="ap" value={autoPrint} onChange={(e) => { setAutoPrint(e.target.value); try { localStorage.setItem("menuto.autoPrint", e.target.value); } catch { /* ignore */ } }}>
+                  <option value="none">{k("apNone")}</option><option value="kitchen">{k("apKitchen")}</option><option value="customer">{k("apCustomer")}</option><option value="both">{k("apBoth")}</option>
+                </select>
+              </label>
+              <label className="f" htmlFor="paper">{k("paper")}
+                <select id="paper" value={paper} onChange={(e) => { setPaper(e.target.value); try { localStorage.setItem("menuto.paper", e.target.value); } catch { /* ignore */ } }}>
+                  <option value="42">80 mm</option><option value="32">58 mm</option>
+                </select>
+              </label>
+            </div>
+            <p className="small muted" style={{ margin: 0 }}>{k("installHint")}</p>
+          </div>
+        )}
         {offline && <p className="note">{k("offline")}</p>}
         <div className="tabs" role="tablist" style={{ marginBottom: 14 }}>
           {(["pending", "active", "done"] as const).map((x) => (
@@ -116,8 +180,9 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
               {k(x === "pending" ? "tPending" : x === "active" ? "tActive" : "tDone")} <span className="num">({groups[x].length})</span>
             </button>
           ))}
+          <button role="tab" aria-selected={tab === "stock"} onClick={() => setTab("stock")}>{k("stock")}</button>
         </div>
-        {!loaded ? <p className="empty">…</p> : !list.length ? <p className="empty">{k("noOrders")}</p> : (
+        {tab === "stock" ? <Stock rid={restaurant.id} lang={lang} k={k} /> : !loaded ? <p className="empty">…</p> : !list.length ? <p className="empty">{k("noOrders")}</p> : (
           <div className="orders">{list.map((o) => {
             const left = o.respondBy ? new Date(o.respondBy).getTime() - now : 0;
             const queued = o.status === "PENDING" && left > 4 * 60000;
@@ -155,7 +220,11 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
                     <button className="link" onClick={() => copy(o)}>{k("copy")}</button>
                   </span>
                 </div>
-                <Actions o={o} k={k} t={t} act={act} />
+                <Actions o={o} k={k} t={t} act={act} accept={accept} />
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button className="btn sm ghost" onClick={() => print(o, "kitchen")}>{k("printKitchen")}</button>
+                  <button className="btn sm ghost" onClick={() => print(o, "customer")}>{k("printCustomer")}</button>
+                </div>
               </article>
             );
           })}</div>
@@ -171,7 +240,7 @@ function StatusPill({ o, k, t }: { o: Order; k: (s: string) => string; t: (s: st
   return <span className={`pill ${cls}`}>{o.status === "PENDING" ? <><span className="dot" />{k("newOrder")}</> : o.status === "MISSED" ? k("missed") : t(o.status)}</span>;
 }
 
-function Actions({ o, k, t, act }: { o: Order; k: (s: string) => string; t: (s: string) => string; act: (o: Order, b: Record<string, unknown>) => void }) {
+function Actions({ o, k, t, act, accept }: { o: Order; k: (s: string) => string; t: (s: string) => string; act: (o: Order, b: Record<string, unknown>) => void; accept: (o: Order, m: number) => void }) {
   const [reason, setReason] = useState(REASONS[0]);
   const reasonSelect = (
     <select aria-label={k("reason")} value={reason} onChange={(e) => setReason(e.target.value)} style={{ flex: 1 }}>
@@ -182,7 +251,7 @@ function Actions({ o, k, t, act }: { o: Order; k: (s: string) => string; t: (s: 
     return (
       <div className="big-actions" style={{ display: "grid", gap: 8 }}>
         <div className="small muted">{k("acceptIn")}</div>
-        <div className="prep">{[10, 15, 20, 30, 45, 60].map((m) => <button key={m} className="num" onClick={() => act(o, { action: "accept", prepMin: m })}>{m}</button>)}</div>
+        <div className="prep">{[10, 15, 20, 30, 45, 60].map((m) => <button key={m} className="num" onClick={() => accept(o, m)}>{m}</button>)}</div>
         <div style={{ display: "flex", gap: 8 }}>{reasonSelect}<button className="btn sm ghost" onClick={() => act(o, { action: "reject", reason })}>{k("reject")}</button></div>
       </div>
     );
@@ -199,4 +268,34 @@ function Actions({ o, k, t, act }: { o: Order; k: (s: string) => string; t: (s: 
     );
   }
   return o.rejectReason ? <div className="small muted">{k("reason")}: {t(o.rejectReason)}</div> : null;
+}
+
+type StockRow = { id: string; name: Record<string, string>; state: "available" | "tomorrow" | "indefinite" };
+function Stock({ rid, lang, k }: { rid: string; lang: Lang; k: (s: string) => string }) {
+  const [data, setData] = useState<{ categories: { id: string; name: Record<string, string>; items: StockRow[] }[]; groups: { id: string; name: Record<string, string>; options: StockRow[] }[] } | null>(null);
+  const load = useCallback(() => { fetch(`/api/kitchen/${rid}/stock`).then((r) => r.json()).then(setData).catch(() => {}); }, [rid]);
+  useEffect(() => { load(); }, [load]);
+  async function set(kind: "item" | "option", id: string, state: StockRow["state"]) {
+    await fetch(`/api/kitchen/${rid}/stock`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind, id, state }) });
+    load();
+  }
+  if (!data) return <p className="empty">…</p>;
+  const row = (kind: "item" | "option", x: StockRow) => (
+    <div key={x.id} className="hrow" style={{ justifyContent: "space-between" }}>
+      <b style={{ flex: "1 1 160px" }}>{tr(x.name, lang)}</b>
+      <div className="tabs">
+        {(["available", "tomorrow", "indefinite"] as const).map((st) => (
+          <button key={st} aria-pressed={x.state === st} onClick={() => set(kind, x.id, st)}>{k(st === "available" ? "available" : st === "tomorrow" ? "untilTomorrow" : "indefinite")}</button>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: "grid", gap: 14, paddingBottom: 80 }}>
+      {data.categories.map((c) => <section key={c.id} className="card" style={{ padding: 14, display: "grid", gap: 8 }}><h3>{tr(c.name, lang)}</h3>{c.items.map((i) => row("item", i))}</section>)}
+      {data.groups.length > 0 && <section className="card" style={{ padding: 14, display: "grid", gap: 8 }}><h3>{k("options")}</h3>
+        {data.groups.map((g) => <div key={g.id} style={{ display: "grid", gap: 8 }}><span className="small muted">{tr(g.name, lang)}</span>{g.options.map((o) => row("option", o))}</div>)}
+      </section>}
+    </div>
+  );
 }
