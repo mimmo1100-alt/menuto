@@ -21,6 +21,7 @@ export async function createDemoRestaurant(db: PrismaClient, opts: { partnerId: 
       isDemo: true,
       partnerId,
       services: ["PICKUP", "DELIVERY", "DINEIN"],
+      payments: { PICKUP: ["cash", "card_counter", "satispay"], DELIVERY: ["cash", "card_courier", "satispay"], DINEIN: ["cash", "card_table", "satispay"] },
       notifyEmails,
       maxDaysAhead: 7,
       hours: { create: [{ days: [0, 1, 2, 3, 4, 5, 6], from: "11:00", to: "23:30" }] },

@@ -6,12 +6,12 @@ import DashNav from "./DashNav";
 
 type R = { id: string; name: string; slug: string; currency: string };
 type Row = { id: string; name: string; code?: string; active: boolean };
-type State = { dineIn: boolean; payments: ("cash" | "card_table")[]; tables: Row[] };
+type State = { dineIn: boolean; payments: ("cash" | "card_table" | "satispay")[]; tables: Row[] };
 
 const D: Record<Lang, Record<string, string>> = {
   it: {
     title: "Tavoli", intro: "Ogni tavolo ha il suo codice QR. Il cliente lo inquadra, ordina dal telefono e l'ordine arriva con il numero del tavolo.",
-    on: "Accetta ordini al tavolo", onHint: "Valgono gli orari di apertura del ristorante.", pay: "Pagamento al tavolo", cash: "Contanti", card_table: "Carta al tavolo",
+    on: "Accetta ordini al tavolo", onHint: "Valgono gli orari di apertura del ristorante.", pay: "Pagamento al tavolo", cash: "Contanti", card_table: "Carta o Bancomat al tavolo", satispay: "Satispay",
     list: "I tuoi tavoli", none: "Nessun tavolo. Aggiungine qualcuno qui sotto.", name: "Nome o numero", active: "Attivo", open: "Apri", remove: "Rimuovi",
     add: "Aggiungi", howMany: "Quanti tavoli?", print: "Stampa i QR (PDF)", printOne: "QR", printHint: "Si apre un foglio A4 con 6 cartellini per pagina: stampalo o scegli «Salva come PDF».",
     saveFirst: "Salva prima le modifiche per stampare.", save: "Salva", saving: "Salvo…", saved: "Salvato", unsaved: "Modifiche non salvate",
@@ -20,7 +20,7 @@ const D: Record<Lang, Record<string, string>> = {
   },
   en: {
     title: "Tables", intro: "Each table has its own QR code. The customer scans it, orders from their phone and the order arrives with the table number.",
-    on: "Take orders at the table", onHint: "The restaurant's opening hours apply.", pay: "Payment at the table", cash: "Cash", card_table: "Card at the table",
+    on: "Take orders at the table", onHint: "The restaurant's opening hours apply.", pay: "Payment at the table", cash: "Cash", card_table: "Card at the table", satispay: "Satispay",
     list: "Your tables", none: "No tables yet. Add some below.", name: "Name or number", active: "Active", open: "Open", remove: "Remove",
     add: "Add", howMany: "How many tables?", print: "Print the QR codes (PDF)", printOne: "QR", printHint: "Opens an A4 sheet with 6 cards per page: print it or choose “Save as PDF”.",
     saveFirst: "Save your changes first to print.", save: "Save", saving: "Saving…", saved: "Saved", unsaved: "Unsaved changes",
@@ -29,7 +29,7 @@ const D: Record<Lang, Record<string, string>> = {
   },
   ar: {
     title: "الترابيزات", intro: "كل ترابيزة ليها كود QR. الزبون يصوّره ويطلب من موبايله، والطلب يوصلك برقم الترابيزة.",
-    on: "استقبل طلبات من الترابيزات", onHint: "بتمشي على مواعيد فتح المطعم.", pay: "الدفع على الترابيزة", cash: "كاش", card_table: "كارت على الترابيزة",
+    on: "استقبل طلبات من الترابيزات", onHint: "بتمشي على مواعيد فتح المطعم.", pay: "الدفع على الترابيزة", cash: "كاش", card_table: "كارت أو بنكومات على الترابيزة", satispay: "Satispay",
     list: "الترابيزات بتاعتك", none: "مفيش ترابيزات لسه. ضيف من تحت.", name: "الاسم أو الرقم", active: "شغالة", open: "افتح", remove: "امسح",
     add: "ضيف", howMany: "كام ترابيزة؟", print: "اطبع أكواد الـ QR (PDF)", printOne: "QR", printHint: "هتفتح صفحة A4 فيها 6 كروت في كل صفحة: اطبعها أو اختار «حفظ كـ PDF».",
     saveFirst: "احفظ التعديلات الأول عشان تطبع.", save: "حفظ", saving: "بيحفظ…", saved: "اتحفظ", unsaved: "فيه تعديلات مش محفوظة",
@@ -92,7 +92,7 @@ export default function TablesPage({ restaurant, restaurants, origin, initial, i
             <div style={{ display: "grid", gap: 6 }}>
               <span className="small">{k("pay")}</span>
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                {(["cash", "card_table"] as const).map((p) => (
+                {(["cash", "card_table", "satispay"] as const).map((p) => (
                   <label key={p} className="check"><input type="checkbox" checked={s.payments.includes(p)} onChange={(e) => edit((d) => ({ ...d, payments: e.target.checked ? [...d.payments, p] : d.payments.filter((x) => x !== p) }))} /> {k(p)}</label>
                 ))}
               </div>

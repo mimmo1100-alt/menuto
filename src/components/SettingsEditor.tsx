@@ -11,7 +11,7 @@ const ZoneEditorMap = dynamic(() => import("./ZoneEditorMap"), { ssr: false, loa
 type R = { id: string; name: string; slug: string; currency: string };
 type Svc = "PICKUP" | "DELIVERY" | "DINEIN";
 const SVCS: Svc[] = ["PICKUP", "DELIVERY", "DINEIN"];
-const PAYS = ["cash", "card_counter", "card_courier", "card_table"] as const;
+const PAYS = ["cash", "card_counter", "card_courier", "card_table", "satispay"] as const;
 
 const D: Record<Lang, Record<string, string>> = {
   it: {
@@ -23,7 +23,7 @@ const D: Record<Lang, Record<string, string>> = {
     special: "Giorni speciali (ferie, festività)", addSpecial: "Aggiungi giorno speciale", spName: "Nome", dateFrom: "Dal", dateTo: "Al", open: "Aperto", closed: "Chiuso", message: "Messaggio",
     scheduled: "Ordini programmati", schedOn: "I clienti possono scegliere un orario", minNotice: "Preavviso minimo (minuti)", maxDays: "Fino a quanti giorni prima", slot: "Intervallo orari (minuti)", hideAsap: "Nascondi “Prima possibile”",
     accept: "Accettazione", autoAccept: "Accetta gli ordini automaticamente", prepPickup: "Tempo di preparazione ritiro (min)", prepDelivery: "Tempo di consegna (min)",
-    payments: "Metodi di pagamento", cash: "Contanti", card_counter: "Carta al ritiro", card_courier: "Carta al fattorino", card_table: "Carta al tavolo",
+    payments: "Metodi di pagamento", cash: "Contanti", card_counter: "Carta o Bancomat al ritiro", card_courier: "Carta o Bancomat alla consegna (il fattorino porta il POS)", card_table: "Carta o Bancomat al tavolo", satispay: "Satispay (il cliente paga con l'app quando riceve l'ordine)", onlinePay: "Pagamento online (carta o Satispay al momento dell'ordine)", onlineSoon: "Presto disponibile", onlineHint: "Il cliente pagherà già nel momento in cui ordina. Lo attiveremo più avanti, come servizio a parte.",
     zones: "Zone di consegna", addZone: "Aggiungi zona", zName: "Nome zona", minOrder: "Ordine minimo €", fee: "Costo consegna €", zPrep: "Tempo (min, facoltativo)", radius: "Raggio (km)", hiddenZ: "Nascosta",
     zoneNote: "Trascina la R per spostare il ristorante. Seleziona una zona per modificarla: il cerchio si regola col punto centrale e quello sul bordo; nella forma libera clicca sulla mappa per aggiungere punti (clic destro su un punto per toglierlo).",
     shape: "Forma", circle: "Cerchio", polygon: "Forma libera", clearShape: "Ricomincia la forma", editOnMap: "Modifica sulla mappa", editing: "In modifica",
@@ -43,7 +43,7 @@ const D: Record<Lang, Record<string, string>> = {
     special: "Special days (holidays)", addSpecial: "Add special day", spName: "Name", dateFrom: "From", dateTo: "To", open: "Open", closed: "Closed", message: "Message",
     scheduled: "Scheduled orders", schedOn: "Customers can pick a time", minNotice: "Minimum notice (minutes)", maxDays: "Up to how many days ahead", slot: "Time slot length (minutes)", hideAsap: "Hide “As soon as possible”",
     accept: "Accepting orders", autoAccept: "Accept orders automatically", prepPickup: "Pickup prep time (min)", prepDelivery: "Delivery time (min)",
-    payments: "Payment methods", cash: "Cash", card_counter: "Card at pickup", card_courier: "Card to the delivery person", card_table: "Card at the table",
+    payments: "Payment methods", cash: "Cash", card_counter: "Card at pickup", card_courier: "Card on delivery (the driver brings the card machine)", card_table: "Card at the table", satispay: "Satispay (the customer pays in the app when they get the order)", onlinePay: "Online payment (card or Satispay when ordering)", onlineSoon: "Coming soon", onlineHint: "The customer will pay right when ordering. We'll turn this on later, as a separate service.",
     zones: "Delivery areas", addZone: "Add area", zName: "Area name", minOrder: "Minimum order €", fee: "Delivery fee €", zPrep: "Time (min, optional)", radius: "Radius (km)", hiddenZ: "Hidden",
     zoneNote: "Drag the R to move the restaurant. Select an area to edit it: a circle is set by its centre and edge points; for a free shape click the map to add corners (right-click a corner to remove it).",
     shape: "Shape", circle: "Circle", polygon: "Free shape", clearShape: "Start the shape again", editOnMap: "Edit on map", editing: "Editing",
@@ -63,7 +63,7 @@ const D: Record<Lang, Record<string, string>> = {
     special: "أيام خاصة (أجازات)", addSpecial: "أضف يوم خاص", spName: "الاسم", dateFrom: "من يوم", dateTo: "لحد يوم", open: "مفتوح", closed: "مقفول", message: "رسالة",
     scheduled: "الطلب المسبق", schedOn: "العميل يقدر يختار ميعاد", minNotice: "أقل وقت مسبق (دقيقة)", maxDays: "لحد كام يوم قدام", slot: "طول الفترة (دقيقة)", hideAsap: "إخفاء «في أقرب وقت»",
     accept: "قبول الطلبات", autoAccept: "قبول الطلبات تلقائيًا", prepPickup: "وقت تجهيز الاستلام (دقيقة)", prepDelivery: "وقت التوصيل (دقيقة)",
-    payments: "طرق الدفع", cash: "كاش", card_counter: "كارت عند الاستلام", card_courier: "كارت مع الطيار", card_table: "كارت على الترابيزة",
+    payments: "طرق الدفع", cash: "كاش", card_counter: "كارت أو بنكومات عند الاستلام", card_courier: "كارت أو بنكومات مع الطيار (بيجيب جهاز الـ POS)", card_table: "كارت أو بنكومات على الترابيزة", satispay: "Satispay (الزبون يدفع من التطبيق لما يستلم)", onlinePay: "الدفع أونلاين (كارت أو Satispay وقت الطلب)", onlineSoon: "قريبًا", onlineHint: "الزبون هيدفع وقت ما يطلب على طول. هنشغّلها بعدين كخدمة لوحدها.",
     zones: "مناطق التوصيل", addZone: "أضف منطقة", zName: "اسم المنطقة", minOrder: "الحد الأدنى €", fee: "رسوم التوصيل €", zPrep: "الوقت (دقيقة، اختياري)", radius: "نصف القطر (كم)", hiddenZ: "مخفية",
     zoneNote: "اسحب حرف R عشان تحرّك مكان المطعم. اختار منطقة عشان تعدّلها: الدايرة بتتظبط بالنقطة اللي في النص والنقطة اللي على الحافة، والشكل الحر بتدوس على الخريطة تضيف نقط (كليك يمين على النقطة يشيلها).",
     shape: "الشكل", circle: "دايرة", polygon: "شكل حر", clearShape: "ابدأ الشكل من الأول", editOnMap: "عدّل على الخريطة", editing: "بتتعدل",
@@ -211,6 +211,11 @@ export default function SettingsEditor({ restaurant, restaurants, initial, isPar
               ))}</div>
             </div>
           ))}
+          <div className="soon" aria-disabled="true">
+            <label className="check"><input type="checkbox" disabled checked={false} readOnly /> {k("onlinePay")}</label>
+            <span className="pill">{k("onlineSoon")}</span>
+            <span className="small muted" style={{ flexBasis: "100%" }}>{k("onlineHint")}</span>
+          </div>
         </section>
 
         <section className="card"><h3>{k("hours")}</h3>

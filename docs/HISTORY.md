@@ -53,4 +53,5 @@ The first chat (12 November 2026), in order. A new session should read this, the
 - Built **ordering at the table**: `Table` model with a random code per table, Tables page in the dashboard with printable QR cards, table mode on the ordering page (name + payment only), table shown on the kitchen screen, receipts and emails. "At the table" is offered only from a table QR.
 - The owner said their restaurants don't use table reservations: moved after March.
 - Built the **go-live essentials**: password reset and change, Team page with staff accounts, rate limiting, privacy notice and order terms per restaurant, nightly encrypted database backup.
-- **Next:** online payments with Stripe.
+- Payment methods like GloriaFood plus **Satispay**: cash, card/Bancomat with the POS, Satispay, all paid on receipt. Online payment stays "coming soon" in Settings (owner decision: not now).
+- **Next:** automatic tests (`tests/e2e` + CI).

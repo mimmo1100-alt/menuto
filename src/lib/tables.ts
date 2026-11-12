@@ -2,7 +2,7 @@ import { randomBytes } from "crypto";
 import { z } from "zod";
 import { db } from "./db";
 
-const PAY = ["cash", "card_table"] as const;
+const PAY = ["cash", "card_table", "satispay"] as const;
 
 export const tablesSchema = z.object({
   dineIn: z.boolean(),

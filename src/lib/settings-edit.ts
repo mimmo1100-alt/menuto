@@ -6,7 +6,7 @@ const hhmm = z.string().regex(/^\d{2}:\d{2}$/);
 const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const svc = z.enum(["PICKUP", "DELIVERY", "DINEIN"]);
 const cents = z.number().int().min(0).max(1_000_000);
-const PAY = ["cash", "card_counter", "card_courier", "card_table"] as const;
+const PAY = ["cash", "card_counter", "card_courier", "card_table", "satispay"] as const;
 
 export const settingsSchema = z.object({
   name: z.string().trim().min(1).max(80), phone: z.string().trim().min(3).max(30),
