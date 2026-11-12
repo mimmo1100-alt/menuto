@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { orderEmails } from "@/lib/order-emails";
 import { db } from "@/lib/db";
 import { canManage } from "@/lib/auth";
 import { expireMissed } from "@/lib/orders";
@@ -6,7 +7,8 @@ import { expireMissed } from "@/lib/orders";
 export async function GET(_req: Request, { params }: { params: Promise<{ rid: string }> }) {
   const { rid } = await params;
   if (!(await canManage(rid))) return NextResponse.json({ error: "auth" }, { status: 401 });
-  await expireMissed(rid);
+  const missed = await expireMissed(rid);
+  if (missed.length) after(async () => { for (const id of missed) await orderEmails(id, "missed"); });
   const since = new Date(Date.now() - 36 * 3600e3);
   const orders = await db.order.findMany({
     where: { restaurantId: rid, OR: [{ createdAt: { gte: since } }, { status: { in: ["PENDING", "ACCEPTED", "READY"] } }] },

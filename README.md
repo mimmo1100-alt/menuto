@@ -25,7 +25,9 @@ npm run dev
 - Language from the device (Italian, English, Arabic with right-to-left layout)
 - Live order tracking for the customer; restaurant screen with sound, 4-minute answer window, accept with prep time, decline/cancel with reason, ready, handed over
 - Night pre-orders wait silently until opening time
+- Emails to the customer (received, confirmed with time, declined/canceled with reason, missed, ready) and to the restaurant (new order), in the customer's language. Set RESEND_API_KEY and EMAIL_FROM to send; otherwise they are stored in the EmailLog table
+- Website button (`/embed.js`), ordering link and QR code on the dashboard's Publish page
 
 Maps use OpenStreetMap tiles and Nominatim address search. Both are fine for testing; before going live with many restaurants, switch to a paid tile/geocoding provider (their free services have strict usage limits).
 
-Planned next: emails, Android order-taking app with Epson printing, partner panel, GloriaFood menu import.
+Planned next: Android order-taking app with Epson printing, partner panel, GloriaFood menu import.

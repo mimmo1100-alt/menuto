@@ -31,7 +31,7 @@ const D: Record<Lang, Record<string, string>> = {
     coupons: "Codici sconto", addCoupon: "Aggiungi codice", code: "Codice", kind: "Tipo", percent: "Sconto %", fixed: "Sconto fisso €", free_delivery: "Consegna gratis", value: "Valore",
     onePer: "Una volta per cliente", active: "Attivo", validTo: "Valido fino al", used: "Usato",
     tax: "IVA", taxIncl: "I prezzi includono l'IVA", taxName: "Nome imposta", taxRate: "Aliquota %",
-    notify: "Email che ricevono gli ordini", addEmail: "Aggiungi email",
+    notify: "Email che ricevono gli ordini", addEmail: "Aggiungi email", emailReady: "Avvisa il cliente via email quando l'ordine è pronto",
     save: "Salva modifiche", discard: "Annulla modifiche", saved: "Salvato", unsaved: "Modifiche non salvate", err: "Salvataggio non riuscito", dupCoupon: "Due codici sconto uguali",
   },
   en: {
@@ -51,7 +51,7 @@ const D: Record<Lang, Record<string, string>> = {
     coupons: "Coupon codes", addCoupon: "Add code", code: "Code", kind: "Type", percent: "Percent off", fixed: "Fixed amount €", free_delivery: "Free delivery", value: "Value",
     onePer: "Once per customer", active: "Active", validTo: "Valid until", used: "Used",
     tax: "VAT", taxIncl: "Prices include VAT", taxName: "Tax name", taxRate: "Rate %",
-    notify: "Emails that receive orders", addEmail: "Add email",
+    notify: "Emails that receive orders", addEmail: "Add email", emailReady: "Email the customer when the order is ready",
     save: "Save changes", discard: "Discard changes", saved: "Saved", unsaved: "Unsaved changes", err: "Couldn't save", dupCoupon: "Two coupon codes are the same",
   },
   ar: {
@@ -71,7 +71,7 @@ const D: Record<Lang, Record<string, string>> = {
     coupons: "أكواد الخصم", addCoupon: "أضف كود", code: "الكود", kind: "النوع", percent: "خصم %", fixed: "خصم مبلغ €", free_delivery: "توصيل مجاني", value: "القيمة",
     onePer: "مرة واحدة لكل عميل", active: "مفعّل", validTo: "صالح لحد", used: "اتستخدم",
     tax: "الضريبة", taxIncl: "الأسعار شاملة الضريبة", taxName: "اسم الضريبة", taxRate: "النسبة %",
-    notify: "إيميلات بتستلم الطلبات", addEmail: "أضف إيميل",
+    notify: "إيميلات بتستلم الطلبات", addEmail: "أضف إيميل", emailReady: "ابعت إيميل للعميل لما الطلب يجهز",
     save: "احفظ التعديلات", discard: "تراجع", saved: "اتحفظ", unsaved: "تعديلات مش محفوظة", err: "الحفظ ماتمّش", dupCoupon: "فيه كودين خصم زي بعض",
   },
 };
@@ -181,6 +181,7 @@ export default function SettingsEditor({ restaurant, restaurants, initial }: { r
               </div>
             ))}
             <div><button className="btn sm ghost" onClick={() => edit((d) => { d.notifyEmails.push(""); })}>+ {k("addEmail")}</button></div>
+            <label className="check"><input type="checkbox" checked={s.emailOnReady} onChange={(e) => edit((d) => { d.emailOnReady = e.target.checked; })} /> {k("emailReady")}</label>
           </div>
         </section>
 

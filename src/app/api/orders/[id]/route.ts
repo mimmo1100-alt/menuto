@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { orderEmails } from "@/lib/order-emails";
 import { db } from "@/lib/db";
 import { expireMissed } from "@/lib/orders";
 
@@ -7,7 +8,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const o0 = await db.order.findUnique({ where: { id }, select: { restaurantId: true } });
   if (!o0) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  await expireMissed(o0.restaurantId);
+  const missed = await expireMissed(o0.restaurantId);
+  if (missed.length) after(async () => { for (const id of missed) await orderEmails(id, "missed"); });
   const o = await db.order.findUnique({
     where: { id },
     select: {

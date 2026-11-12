@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { orderEmails } from "@/lib/order-emails";
 import { ZodError } from "zod";
 import { createOrder } from "@/lib/orders";
 import { OrderError } from "@/lib/pricing";
@@ -7,6 +8,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const { slug } = await params;
   try {
     const order = await createOrder(slug, await req.json());
+    after(async () => {
+      await orderEmails(order.id, order.status === "ACCEPTED" ? "accepted" : "received");
+      await orderEmails(order.id, "new_order");
+    });
     return NextResponse.json({ id: order.id, number: order.number, status: order.status });
   } catch (e) {
     if (e instanceof OrderError) return NextResponse.json({ error: e.code }, { status: 422 });

@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { orderEmails, type EmailKind } from "@/lib/order-emails";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { canManage } from "@/lib/auth";
@@ -33,5 +34,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ rid: st
   // guard against two devices answering at once
   const res = await db.order.updateMany({ where: { id, status: o.status }, data });
   if (res.count === 0) return NextResponse.json({ error: "state" }, { status: 409 });
+  const mail: Partial<Record<string, EmailKind>> = { accept: "accepted", reject: "rejected", cancel: "canceled", ready: "ready" };
+  const kind = mail[a.action];
+  if (kind) after(() => orderEmails(id, kind));
   return NextResponse.json({ ok: true });
 }

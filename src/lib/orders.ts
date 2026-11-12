@@ -105,10 +105,14 @@ export async function createOrder(slug: string, raw: unknown) {
   throw new OrderError("invalid");
 }
 
-/** Orders still PENDING past their deadline become MISSED. Pre-orders made while closed wait until opening. */
+/** Orders still PENDING past their deadline become MISSED. Pre-orders made while closed wait until opening. Returns the ids that just became missed. */
 export async function expireMissed(restaurantId?: string) {
-  await db.order.updateMany({
+  const due = await db.order.findMany({
     where: { status: "PENDING", respondBy: { lt: new Date() }, ...(restaurantId ? { restaurantId } : {}) },
-    data: { status: "MISSED" },
+    select: { id: true },
   });
+  if (!due.length) return [];
+  const ids = due.map((d) => d.id);
+  await db.order.updateMany({ where: { id: { in: ids }, status: "PENDING" }, data: { status: "MISSED" } });
+  return ids;
 }
