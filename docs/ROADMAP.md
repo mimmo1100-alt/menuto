@@ -28,10 +28,11 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 
 ## Next (in this order)
 
-1. Table reservations.
+1. Before the restaurants go live: password reset, staff accounts from the dashboard, rate limiting on public APIs, privacy/terms pages (GDPR), backups.
 2. Online payments with Stripe (paid add-on).
 3. Turn the Playwright scripts into `tests/e2e` + CI.
-4. Before the restaurants go live: rate limiting on public APIs, password reset, staff accounts from the dashboard, privacy/terms pages (GDPR), backups.
+
+Later (after March 2027): table reservations. The owner's 6 restaurants don't use reservations in GloriaFood (owner, 12 Nov 2026).
 
 ## Known gaps
 
