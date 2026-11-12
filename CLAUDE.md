@@ -1,6 +1,6 @@
 # Menuto: project notes for Claude
 
-Read this first in every new session. It holds what earlier sessions decided, so work can continue without the old chat.
+Read this first in every new session, then `docs/HISTORY.md` (how it started and where the last chat stopped) and `docs/ROADMAP.md` (status and next steps). Research on GloriaFood is in `docs/research/`.
 
 ## Who and why
 
