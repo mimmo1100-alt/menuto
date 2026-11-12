@@ -1,0 +1,335 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PARTNER
+  OWNER
+  STAFF
+}
+
+enum ServiceType {
+  PICKUP
+  DELIVERY
+  DINEIN
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  READY
+  COMPLETED
+  REJECTED
+  MISSED
+  CANCELED
+}
+
+/// A reseller (white-label) that manages several restaurants.
+model Partner {
+  id          String       @id @default(cuid())
+  name        String
+  imprint     String?
+  logoUrl     String?
+  createdAt   DateTime     @default(now())
+  users       User[]
+  restaurants Restaurant[]
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String?
+  role         Role
+  partnerId    String?
+  partner      Partner?    @relation(fields: [partnerId], references: [id])
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  sessions     Session[]
+  createdAt    DateTime    @default(now())
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+}
+
+model Restaurant {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  phone           String
+  address         String
+  city            String
+  postcode        String?
+  lat             Float?
+  lng             Float?
+  timezone        String   @default("Europe/Rome")
+  currency        String   @default("EUR")
+  defaultLang     String   @default("it")
+  coverImage      String?
+  isDemo          Boolean  @default(false)
+  /// false = online ordering switched off entirely
+  acceptingOrders Boolean  @default(true)
+  pausedUntil     DateTime?
+  pauseMessage    String?
+  pausedServices  ServiceType[]
+  services        ServiceType[] @default([PICKUP, DELIVERY])
+  /// { PICKUP: ["cash","card_counter"], DELIVERY: ["cash","card_courier"], DINEIN: [...] }
+  payments        Json     @default("{\"PICKUP\":[\"cash\",\"card_counter\"],\"DELIVERY\":[\"cash\",\"card_courier\"],\"DINEIN\":[\"cash\"]}")
+  scheduledOrders Boolean  @default(true)
+  minNoticeMin    Int      @default(30)
+  maxDaysAhead    Int      @default(1)
+  slotMinutes     Int      @default(15)
+  hideAsap        Boolean  @default(false)
+  autoAccept      Boolean  @default(false)
+  prepPickupMin   Int      @default(20)
+  prepDeliveryMin Int      @default(35)
+  allowOutsideZones Boolean @default(false)
+  taxIncluded     Boolean  @default(true)
+  taxName         String   @default("IVA")
+  /// basis points, 1000 = 10%
+  taxRateBp       Int      @default(1000)
+  notifyEmails    String[]
+  partnerId       String?
+  partner         Partner? @relation(fields: [partnerId], references: [id])
+  createdAt       DateTime @default(now())
+
+  users        User[]
+  hours        OpeningHours[]
+  specialDays  SpecialDay[]
+  zones        DeliveryZone[]
+  categories   Category[]
+  items        Item[]
+  optionGroups OptionGroup[]
+  coupons      Coupon[]
+  orders       Order[]
+}
+
+model OpeningHours {
+  id           String       @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  /// null = applies to every service
+  service      ServiceType?
+  /// 0 = Sunday ... 6 = Saturday
+  days         Int[]
+  from         String
+  to           String
+}
+
+model SpecialDay {
+  id           String       @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  dateFrom     String
+  dateTo       String
+  service      ServiceType?
+  open         Boolean      @default(false)
+  from         String?
+  to           String?
+  message      String?
+}
+
+model DeliveryZone {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  color        String     @default("#c4381f")
+  /// "circle" uses center + radius, "polygon" uses points [[lat,lng],...]
+  kind         String     @default("circle")
+  centerLat    Float?
+  centerLng    Float?
+  radiusM      Int?
+  polygon      Json?
+  minOrder     Int        @default(0)
+  fee          Int        @default(0)
+  prepMin      Int?
+  hidden       Boolean    @default(false)
+  position     Int        @default(0)
+}
+
+model Category {
+  id           String          @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  /// { it, en, ar }
+  name         Json
+  desc         Json?
+  image        String?
+  position     Int             @default(0)
+  hidden       Boolean         @default(false)
+  hiddenUntil  DateTime?
+  /// optional { days:[0-6], from:"HH:MM", to:"HH:MM" }
+  showOnly     Json?
+  items        Item[]
+  groups       CategoryGroup[]
+}
+
+model Item {
+  id               String      @id @default(cuid())
+  restaurantId     String
+  restaurant       Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categoryId       String
+  category         Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name             Json
+  desc             Json?
+  internalName     String?
+  image            String?
+  /// cents; used when the item has no sizes
+  price            Int         @default(0)
+  position         Int         @default(0)
+  hidden           Boolean     @default(false)
+  hiddenUntil      DateTime?
+  showOnly         Json?
+  soldOutUntil     DateTime?
+  soldOutIndef     Boolean     @default(false)
+  /// spicy, vegetarian, vegan, halal, raw
+  labels           String[]
+  allergens        String[]
+  hideInstructions Boolean     @default(false)
+  sizes            ItemSize[]
+  groups           ItemGroup[]
+  orderItems       OrderItem[]
+}
+
+model ItemSize {
+  id          String  @id @default(cuid())
+  itemId      String
+  item        Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  name        Json
+  price       Int
+  preselected Boolean @default(false)
+  position    Int     @default(0)
+}
+
+/// A reusable library of choices/add-ons, attached to categories or items.
+model OptionGroup {
+  id           String          @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         Json
+  required     Boolean         @default(false)
+  min          Int             @default(0)
+  max          Int             @default(0)
+  position     Int             @default(0)
+  options      Option[]
+  categories   CategoryGroup[]
+  items        ItemGroup[]
+}
+
+model Option {
+  id           String      @id @default(cuid())
+  groupId      String
+  group        OptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name         Json
+  price        Int         @default(0)
+  preselected  Boolean     @default(false)
+  soldOutUntil DateTime?
+  soldOutIndef Boolean     @default(false)
+  position     Int         @default(0)
+}
+
+model CategoryGroup {
+  categoryId String
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  groupId    String
+  group      OptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  position   Int         @default(0)
+
+  @@id([categoryId, groupId])
+}
+
+model ItemGroup {
+  itemId   String
+  item     Item        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  groupId  String
+  group    OptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  position Int         @default(0)
+
+  @@id([itemId, groupId])
+}
+
+model Coupon {
+  id             String     @id @default(cuid())
+  restaurantId   String
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  code           String
+  /// "percent" | "fixed" | "free_delivery"
+  kind           String     @default("percent")
+  /// percent: whole percent; fixed: cents
+  value          Int
+  minOrder       Int        @default(0)
+  onePerCustomer Boolean    @default(false)
+  active         Boolean    @default(true)
+  validFrom      DateTime?
+  validTo        DateTime?
+  uses           Int        @default(0)
+
+  @@unique([restaurantId, code])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  number        Int
+  restaurantId  String
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  status        OrderStatus @default(PENDING)
+  type          ServiceType
+  asap          Boolean     @default(true)
+  fulfillAt     DateTime?
+  firstName     String
+  lastName      String
+  email         String
+  phone         String
+  marketingOk   Boolean     @default(false)
+  address       Json?
+  zoneId        String?
+  table         String?
+  payment       String
+  comments      String?
+  lang          String      @default("it")
+  couponCode    String?
+  subtotal      Int
+  discount      Int         @default(0)
+  deliveryFee   Int         @default(0)
+  tax           Int         @default(0)
+  total         Int
+  prepMin       Int?
+  acceptedAt    DateTime?
+  readyAt       DateTime?
+  rejectReason  String?
+  /// when a still-pending order becomes MISSED
+  respondBy     DateTime?
+  createdAt     DateTime    @default(now())
+  items         OrderItem[]
+
+  @@unique([restaurantId, number])
+  @@index([restaurantId, status, createdAt])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId       String?
+  item         Item?   @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  name         Json
+  internalName String?
+  sizeName     Json?
+  qty          Int
+  unitPrice    Int
+  /// [{ group: {it..}, name: {it..}, price }]
+  options      Json
+  instructions String?
+  total        Int
+}

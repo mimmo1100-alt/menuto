@@ -1,0 +1,31 @@
+/* kitchen */
+.kbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-block:16px}
+.kbar h2{font-size:26px;flex:1}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:14px}
+.tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.orders{display:grid;gap:14px;padding-bottom:80px}
+@media (min-width:760px){.orders{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}}
+.order{padding:16px;display:grid;gap:10px;align-content:start}
+.order.new{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.order .oh{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.order .oid{font-family:var(--f-display);font-size:20px;font-weight:800}
+.order ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+.order li{display:flex;gap:8px}
+.order li .q{font-weight:700;min-width:26px}
+.order li .o{display:block;font-size:12px;color:var(--muted)}
+.order .meta{display:grid;gap:2px;font-size:14px}
+.prep{display:flex;gap:6px;flex-wrap:wrap}
+.prep button{flex:1 1 52px;border:1px solid var(--ok);color:var(--ok);background:var(--ok-soft);border-radius:10px;padding:9px 4px;font-weight:700}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+.order .oid{font-family:var(--f-display);font-size:22px;font-weight:800}
+.countdown{font-weight:700;color:var(--danger)}
+.dash-top{background:var(--fg);color:var(--bg)}
+.dash-top .wrap{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-block:10px}
+.dash-top a,.dash-top button{color:inherit;background:none;border:1px solid transparent;border-radius:999px;padding:5px 10px;font-size:13px;text-decoration:none}
+.dash-top a[aria-current="page"]{border-color:currentColor}
+.dash-top .sp{flex:1}
+.login{max-width:380px;margin:10vh auto;padding:24px;display:grid;gap:14px}
+.big-actions .btn{padding:14px 18px;font-size:16px}
+@media (prefers-reduced-motion:no-preference){.order.new{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{box-shadow:0 0 0 6px var(--accent-soft)}}}
