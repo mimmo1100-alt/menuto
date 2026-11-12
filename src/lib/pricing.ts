@@ -21,15 +21,17 @@ export function priceLine(item: PubItem, line: CartLineInput): PricedLine {
   if (item.soldOut || line.qty < 1 || line.qty > 99) throw new OrderError("item");
   let base = item.price;
   let sizeName: L | null = null;
+  let groups = item.groups;
   if (item.sizes.length) {
     const s = item.sizes.find((x) => x.id === line.sizeId);
     if (!s) throw new OrderError("item");
     base = s.price; sizeName = s.name;
+    groups = [...item.groups, ...s.groups];
   }
   const chosen = new Set(line.optionIds);
   const options: PricedLine["options"] = [];
   let used = 0;
-  for (const g of item.groups) {
+  for (const g of groups) {
     const picked = g.options.filter((o) => chosen.has(o.id));
     if (picked.some((o) => o.soldOut)) throw new OrderError("item");
     const [min, max] = groupBounds(g);

@@ -12,7 +12,7 @@ export const groupSchema = z.object({
   id: z.string(), name: l10n, required: z.boolean(), min: z.number().int().min(0).max(50), max: z.number().int().min(0).max(50),
   options: z.array(optionSchema).max(100),
 });
-export const sizeSchema = z.object({ id: z.string(), name: l10n, price: cents, preselected: z.boolean() });
+export const sizeSchema = z.object({ id: z.string(), name: l10n, price: cents, preselected: z.boolean(), groupIds: z.array(z.string()).max(20).default([]) });
 export const itemSchema = z.object({
   id: z.string(), name: l10n, desc: l10n, internalName: z.string().max(80).default(""), price: cents,
   hidden: z.boolean(), soldOut: z.boolean(), labels: z.array(z.enum(["spicy", "vegetarian", "vegan", "halal", "raw"])),
@@ -31,7 +31,7 @@ export async function loadMenuEdit(restaurantId: string): Promise<MenuEdit> {
   const [cats, groups] = await Promise.all([
     db.category.findMany({
       where: { restaurantId }, orderBy: { position: "asc" },
-      include: { groups: { orderBy: { position: "asc" } }, items: { orderBy: { position: "asc" }, include: { sizes: { orderBy: { position: "asc" } }, groups: { orderBy: { position: "asc" } } } } },
+      include: { groups: { orderBy: { position: "asc" } }, items: { orderBy: { position: "asc" }, include: { sizes: { orderBy: { position: "asc" }, include: { groups: { orderBy: { position: "asc" } } } }, groups: { orderBy: { position: "asc" } } } } },
     }),
     db.optionGroup.findMany({ where: { restaurantId }, orderBy: { position: "asc" }, include: { options: { orderBy: { position: "asc" } } } }),
   ]);
@@ -47,7 +47,7 @@ export async function loadMenuEdit(restaurantId: string): Promise<MenuEdit> {
         id: i.id, name: L(i.name), desc: L(i.desc), internalName: i.internalName ?? "", price: i.price, hidden: i.hidden, soldOut: isSoldOut(i),
         labels: i.labels as MenuEdit["categories"][number]["items"][number]["labels"], hideInstructions: i.hideInstructions,
         showOnly: (i.showOnly as MenuEdit["categories"][number]["showOnly"]) ?? null,
-        sizes: i.sizes.map((s) => ({ id: s.id, name: L(s.name), price: s.price, preselected: s.preselected })),
+        sizes: i.sizes.map((s) => ({ id: s.id, name: L(s.name), price: s.price, preselected: s.preselected, groupIds: s.groups.map((g) => g.groupId) })),
         groupIds: i.groups.map((g) => g.groupId),
       })),
     })),
@@ -107,7 +107,15 @@ export async function saveMenuEdit(restaurantId: string, m: MenuEdit) {
           : await tx.item.create({ data: { ...idata, restaurantId } });
         keepItems.push(irow.id);
         await tx.itemSize.deleteMany({ where: { itemId: irow.id } });
-        if (it.sizes.length) await tx.itemSize.createMany({ data: it.sizes.map((s, si) => ({ itemId: irow.id, name: clean(s.name), price: s.price, preselected: s.preselected, position: si })) });
+        for (const [si, sz] of it.sizes.entries()) {
+          const sg = sz.groupIds.map(gid).filter((g): g is string => !!g && !cg.includes(g));
+          await tx.itemSize.create({
+            data: {
+              itemId: irow.id, name: clean(sz.name), price: sz.price, preselected: sz.preselected, position: si,
+              groups: sg.length ? { create: sg.map((g, gi) => ({ groupId: g, position: gi })) } : undefined,
+            },
+          });
+        }
         await tx.itemGroup.deleteMany({ where: { itemId: irow.id } });
         const ig = it.groupIds.map(gid).filter((g): g is string => !!g && !cg.includes(g));
         if (ig.length) await tx.itemGroup.createMany({ data: ig.map((g, i) => ({ itemId: irow.id, groupId: g, position: i })) });

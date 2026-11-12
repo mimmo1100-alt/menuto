@@ -94,17 +94,18 @@ export default function OrderApp({ data }: { data: PageData }) {
   // drop lines whose item vanished or sold out since they were added
   const validCart = cart.filter((l) => { const i = items.get(l.itemId); return i && !i.soldOut; });
 
+  const groupsFor = (item: PubItem, sizeId: string | null) => [...item.groups, ...(item.sizes.find((s) => s.id === sizeId)?.groups ?? [])];
   function lineUnit(l: Line) {
     const item = items.get(l.itemId)!;
     let p = item.sizes.length ? item.sizes.find((s) => s.id === l.sizeId)?.price ?? 0 : item.price;
-    for (const g of item.groups) for (const o of g.options) if (l.optionIds.includes(o.id)) p += o.price;
+    for (const g of groupsFor(item, l.sizeId)) for (const o of g.options) if (l.optionIds.includes(o.id)) p += o.price;
     return p;
   }
   function lineLabel(l: Line) {
     const item = items.get(l.itemId)!;
     const parts: string[] = [];
     if (l.sizeId) parts.push(tr(item.sizes.find((s) => s.id === l.sizeId)?.name, lang));
-    for (const g of item.groups) for (const o of g.options) if (l.optionIds.includes(o.id)) parts.push(tr(o.name, lang));
+    for (const g of groupsFor(item, l.sizeId)) for (const o of g.options) if (l.optionIds.includes(o.id)) parts.push(tr(o.name, lang));
     return parts.join(lang === "ar" ? "، " : ", ");
   }
   const subtotal = validCart.reduce((a, l) => a + lineUnit(l) * l.qty, 0);
@@ -141,13 +142,24 @@ export default function OrderApp({ data }: { data: PageData }) {
 
   function openItem(item: PubItem) {
     if (item.soldOut) return;
+    const sizeId = item.sizes.find((s) => s.preselected)?.id ?? item.sizes[0]?.id ?? null;
+    setSheet({ item, sizeId, sel: preselect(item, sizeId), qty: 1, instructions: "", err: "" });
+  }
+  function preselect(item: PubItem, sizeId: string | null) {
     const sel: Record<string, string[]> = {};
-    for (const g of item.groups) sel[g.id] = g.options.filter((o) => o.preselected && !o.soldOut).map((o) => o.id);
-    setSheet({ item, sizeId: item.sizes.find((s) => s.preselected)?.id ?? item.sizes[0]?.id ?? null, sel, qty: 1, instructions: "", err: "" });
+    for (const g of groupsFor(item, sizeId)) sel[g.id] = g.options.filter((o) => o.preselected && !o.soldOut).map((o) => o.id);
+    return sel;
+  }
+  function chooseSize(sizeId: string) {
+    if (!sheet) return;
+    // keep picks in groups shared by both sizes, reset the size-specific ones
+    const fresh = preselect(sheet.item, sizeId);
+    for (const g of sheet.item.groups) fresh[g.id] = sheet.sel[g.id] ?? fresh[g.id];
+    setSheet({ ...sheet, sizeId, sel: fresh, err: "" });
   }
   function toggleOpt(gid: string, oid: string) {
     if (!sheet) return;
-    const g = sheet.item.groups.find((x) => x.id === gid)!;
+    const g = groupsFor(sheet.item, sheet.sizeId).find((x) => x.id === gid)!;
     const cur = sheet.sel[gid] ?? [];
     const single = g.max === 1;
     let next = cur.includes(oid) ? cur.filter((x) => x !== oid) : single ? [oid] : [...cur, oid];
@@ -156,12 +168,13 @@ export default function OrderApp({ data }: { data: PageData }) {
   }
   function addToCart() {
     if (!sheet) return;
-    for (const g of sheet.item.groups) {
+    const active = groupsFor(sheet.item, sheet.sizeId);
+    for (const g of active) {
       const n = (sheet.sel[g.id] ?? []).length;
       const min = Math.max(g.min, g.required ? 1 : 0);
       if (n < min) { setSheet({ ...sheet, err: `${tr(g.name, lang)}: ${min === 1 ? t("chooseOne") : t("chooseAtLeast", { n: min })}` }); return; }
     }
-    const optionIds = Object.values(sheet.sel).flat().sort();
+    const optionIds = active.flatMap((g) => sheet.sel[g.id] ?? []).sort();
     const key = `${sheet.item.id}|${sheet.sizeId}|${optionIds.join(",")}|${sheet.instructions.trim()}`;
     setCart((c) => {
       const ex = c.find((l) => l.key === key);
@@ -437,14 +450,16 @@ export default function OrderApp({ data }: { data: PageData }) {
               {sheet.item.sizes.length > 0 && (
                 <div className="group"><h4>{t("size")} <span className="pill warn">{t("chooseOne")}</span></h4>
                   <div role="radiogroup">{sheet.item.sizes.map((s) => (
-                    <button key={s.id} className="opt radio" role="radio" aria-checked={sheet.sizeId === s.id} onClick={() => setSheet({ ...sheet, sizeId: s.id })}>
+                    <button key={s.id} className="opt radio" role="radio" aria-checked={sheet.sizeId === s.id} onClick={() => chooseSize(s.id)}>
                       <span className="box" /><span className="on">{tr(s.name, lang)}</span><span className="muted num small">{money(s.price)}</span>
                     </button>))}</div>
                 </div>
               )}
-              {sheet.item.groups.map((g) => {
+              {groupsFor(sheet.item, sheet.sizeId).map((g) => {
                 const min = Math.max(g.min, g.required ? 1 : 0);
-                const rule = g.max === 1 ? t("chooseOne") : min > 0 && g.max === min ? t("chooseExactly", { n: min }) : g.max > 0 ? t("chooseUpTo", { n: g.max }) : min > 0 ? t("chooseAtLeast", { n: min }) : t("optional");
+                const rule = min === 0
+                  ? (g.max > 1 ? `${t("optional")} · ${t("chooseUpTo", { n: g.max })}` : t("optional"))
+                  : g.max === 1 ? t("chooseOne") : g.max === min ? t("chooseExactly", { n: min }) : g.max > 0 ? `${t("chooseAtLeast", { n: min })} · ${t("chooseUpTo", { n: g.max })}` : t("chooseAtLeast", { n: min });
                 const single = g.max === 1;
                 return (
                   <div className="group" key={g.id}>
@@ -481,7 +496,7 @@ export default function OrderApp({ data }: { data: PageData }) {
     if (!sheet) return 0;
     const it = sheet.item;
     let p = it.sizes.length ? it.sizes.find((s) => s.id === sheet.sizeId)?.price ?? 0 : it.price;
-    for (const g of it.groups) for (const o of g.options) if ((sheet.sel[g.id] ?? []).includes(o.id)) p += o.price;
+    for (const g of groupsFor(it, sheet.sizeId)) for (const o of g.options) if ((sheet.sel[g.id] ?? []).includes(o.id)) p += o.price;
     return p;
   }
 }

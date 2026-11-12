@@ -205,13 +205,25 @@ model Item {
 }
 
 model ItemSize {
-  id          String  @id @default(cuid())
+  id          String      @id @default(cuid())
   itemId      String
-  item        Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  item        Item        @relation(fields: [itemId], references: [id], onDelete: Cascade)
   name        Json
   price       Int
-  preselected Boolean @default(false)
-  position    Int     @default(0)
+  preselected Boolean     @default(false)
+  position    Int         @default(0)
+  /// option groups offered only with this size (e.g. "Extra (Maxi)" priced differently)
+  groups      SizeGroup[]
+}
+
+model SizeGroup {
+  sizeId   String
+  size     ItemSize    @relation(fields: [sizeId], references: [id], onDelete: Cascade)
+  groupId  String
+  group    OptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  position Int         @default(0)
+
+  @@id([sizeId, groupId])
 }
 
 /// A reusable library of choices/add-ons, attached to categories or items.
@@ -227,6 +239,7 @@ model OptionGroup {
   options      Option[]
   categories   CategoryGroup[]
   items        ItemGroup[]
+  sizes        SizeGroup[]
 }
 
 model Option {

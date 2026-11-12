@@ -13,7 +13,7 @@ export const restaurantInclude = {
       items: {
         orderBy: { position: "asc" },
         include: {
-          sizes: { orderBy: { position: "asc" } },
+          sizes: { orderBy: { position: "asc" }, include: { groups: { orderBy: { position: "asc" }, include: { group: { include: { options: { orderBy: { position: "asc" } } } } } } } },
           groups: { orderBy: { position: "asc" }, include: { group: { include: { options: { orderBy: { position: "asc" } } } } } },
         },
       },
@@ -30,7 +30,8 @@ export type PubGroup = { id: string; name: L; required: boolean; min: number; ma
 export type PubItem = {
   id: string; name: L; desc: L | null; image: string | null; price: number; soldOut: boolean;
   labels: string[]; hideInstructions: boolean;
-  sizes: { id: string; name: L; price: number; preselected: boolean }[];
+  /** each size may add its own option groups (shown only when that size is chosen) */
+  sizes: { id: string; name: L; price: number; preselected: boolean; groups: PubGroup[] }[];
   groups: PubGroup[];
 };
 export type PubCategory = { id: string; name: L; desc: L | null; image: string | null; items: PubItem[] };
@@ -74,7 +75,10 @@ export function publicMenu(r: FullRestaurant, now = new Date()): PubCategory[] {
           return {
             id: i.id, name: i.name as L, desc: (i.desc as L) ?? null, image: i.image, price: i.price, soldOut: soldOut(i, now),
             labels: i.labels, hideInstructions: i.hideInstructions,
-            sizes: i.sizes.map((s) => ({ id: s.id, name: s.name as L, price: s.price, preselected: s.preselected })),
+            sizes: i.sizes.map((s) => ({
+              id: s.id, name: s.name as L, price: s.price, preselected: s.preselected,
+              groups: s.groups.map((x) => x.group).filter((g) => !seen.has(g.id)).map(pubGroup),
+            })),
             groups,
           };
         }),

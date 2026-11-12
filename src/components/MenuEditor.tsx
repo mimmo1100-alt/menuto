@@ -22,7 +22,7 @@ const D: Record<Lang, Record<string, string>> = {
     saveErr: "Salvataggio non riuscito. Controlla i campi e riprova.", confirmDel: "Tocca di nuovo per eliminare", empty: "Nessun prodotto. Aggiungine uno.",
     fromCategory: "dalla categoria", showOnly: "Visibile solo in certi giorni e orari", days: "Giorni", from: "Dalle", to: "Alle",
     spicy: "Piccante", vegetarian: "Vegetariano", vegan: "Vegano", halal: "Halal", raw: "Crudo", newCategory: "Nuova categoria", newItem: "Nuovo prodotto", newGroup: "Nuovo gruppo",
-    translations: "Traduzioni", groupHint: "Un gruppo collegato a una categoria vale per tutti i suoi prodotti.",
+    translations: "Traduzioni", gfTitle: "Importa il menu da GloriaFood", gfHelp: "In GloriaFood: Altro (…) → Integrazioni → aggiungi il modello «Fetch Menu» e copia la chiave. Il menu attuale verrà sostituito.", gfKey: "Chiave «Fetch Menu»", gfFile: "Oppure carica il file del menu (JSON)", gfPreview: "Controlla", gfApply: "Importa e sostituisci il menu", gfConfirm: "Tocca di nuovo per confermare", gfFound: "Trovati: {c} categorie, {i} prodotti, {s} formati, {g} gruppi di opzioni ({o} scelte).", gfSched: "{n} categorie/prodotti avevano orari di visibilità: controllali dopo l'import.", gfDone: "Menu importato.", gfErrKey: "Chiave non valida.", gfErrNet: "GloriaFood non risponde. Riprova o carica il file.", gfErrFormat: "Il file non è un menu di GloriaFood.", sizeGroups: "Opzioni solo per questo formato", groupHint: "Un gruppo collegato a una categoria vale per tutti i suoi prodotti.",
   },
   en: {
     title: "Menu", categories: "Categories", groups: "Options & extras", addCategory: "Add category", addItem: "Add item", addGroup: "Add group",
@@ -33,7 +33,7 @@ const D: Record<Lang, Record<string, string>> = {
     saveErr: "Couldn't save. Check the fields and try again.", confirmDel: "Tap again to delete", empty: "No items yet. Add one.",
     fromCategory: "from the category", showOnly: "Only visible on some days and times", days: "Days", from: "From", to: "To",
     spicy: "Spicy", vegetarian: "Vegetarian", vegan: "Vegan", halal: "Halal", raw: "Raw", newCategory: "New category", newItem: "New item", newGroup: "New group",
-    translations: "Translations", groupHint: "A group attached to a category applies to all its items.",
+    translations: "Translations", gfTitle: "Import the menu from GloriaFood", gfHelp: "In GloriaFood: Others (…) → Integrations → add the «Fetch Menu» template and copy the key. The current menu will be replaced.", gfKey: "«Fetch Menu» key", gfFile: "Or upload the menu file (JSON)", gfPreview: "Check", gfApply: "Import and replace the menu", gfConfirm: "Tap again to confirm", gfFound: "Found: {c} categories, {i} items, {s} sizes, {g} option groups ({o} choices).", gfSched: "{n} categories/items had visibility hours: check them after the import.", gfDone: "Menu imported.", gfErrKey: "Invalid key.", gfErrNet: "GloriaFood isn't answering. Try again or upload the file.", gfErrFormat: "This file isn't a GloriaFood menu.", sizeGroups: "Options only for this size", groupHint: "A group attached to a category applies to all its items.",
   },
   ar: {
     title: "المنيو", categories: "الأقسام", groups: "الإضافات والاختيارات", addCategory: "أضف قسم", addItem: "أضف صنف", addGroup: "أضف مجموعة",
@@ -44,7 +44,7 @@ const D: Record<Lang, Record<string, string>> = {
     saveErr: "الحفظ ماتمّش. راجع الخانات وجرب تاني.", confirmDel: "دوس تاني للحذف", empty: "مفيش أصناف. أضف صنف.",
     fromCategory: "من القسم", showOnly: "يظهر في أيام وساعات معيّنة بس", days: "الأيام", from: "من", to: "إلى",
     spicy: "حار", vegetarian: "نباتي", vegan: "نباتي صرف", halal: "حلال", raw: "نيء", newCategory: "قسم جديد", newItem: "صنف جديد", newGroup: "مجموعة جديدة",
-    translations: "الترجمات", groupHint: "المجموعة المربوطة بقسم بتتطبق على كل أصنافه.",
+    translations: "الترجمات", gfTitle: "انقل المنيو من GloriaFood", gfHelp: "في GloriaFood: Altro (…) ← Integrazioni ← ضيف قالب «Fetch Menu» وانسخ المفتاح. المنيو الحالي هيتشال ويتحط مكانه.", gfKey: "مفتاح «Fetch Menu»", gfFile: "أو ارفع ملف المنيو (JSON)", gfPreview: "راجع", gfApply: "انقل المنيو وبدّل الحالي", gfConfirm: "دوس تاني للتأكيد", gfFound: "لقينا: {c} أقسام، {i} أصناف، {s} أحجام، {g} مجموعات إضافات ({o} اختيار).", gfSched: "{n} أقسام/أصناف كان ليها مواعيد ظهور: راجعها بعد النقل.", gfDone: "المنيو اتنقل.", gfErrKey: "المفتاح مش صحيح.", gfErrNet: "GloriaFood مش بيرد. جرب تاني أو ارفع الملف.", gfErrFormat: "الملف ده مش منيو GloriaFood.", sizeGroups: "إضافات للحجم ده بس", groupHint: "المجموعة المربوطة بقسم بتتطبق على كل أصنافه.",
   },
 };
 const DAYS: Record<Lang, string[]> = {
@@ -93,6 +93,7 @@ export default function MenuEditor({ restaurant, restaurants, initial, isPartner
       <DashNav lang={lang} current="menu" restaurant={restaurant} restaurants={restaurants} isPartner={isPartner} />
       <div className="wrap"><div className="adm">
         <h2 style={{ fontSize: 26 }}>{k("title")}</h2>
+        <GloriaFoodImport rid={restaurant.id} k={k} />
 
         <section className="card"><h3>{k("categories")}</h3>
           {m.categories.map((c, ci) => (
@@ -255,9 +256,13 @@ function ItemForm({ it, cat, groups, lang, k, armed, onChange, onDelete }: {
             <span style={{ width: 120 }}><PriceInput id={`s-${s.id}-price`} label={k("price")} cents={s.price} onChange={(c) => onChange((i) => { i.sizes[si].price = c; })} /></span>
             <label className="check"><input type="radio" name={`pre-${it.id}`} checked={s.preselected} onChange={() => onChange((i) => { i.sizes.forEach((x, xi) => { x.preselected = xi === si; }); })} /> {k("preselected")}</label>
             <button className="link" onClick={() => onChange((i) => { i.sizes.splice(si, 1); })}>{k("remove")}</button>
+            <div style={{ flexBasis: "100%" }}>
+              <GroupChips label={k("sizeGroups")} ids={s.groupIds} inherited={[...cat.groupIds, ...it.groupIds]} groups={groups} lang={lang} k={k}
+                onChange={(ids) => onChange((i) => { i.sizes[si].groupIds = ids; })} />
+            </div>
           </div>
         ))}
-        <div><button className="btn sm ghost" onClick={() => onChange((i) => { i.sizes.push({ id: newId(), name: blank(), price: i.price, preselected: i.sizes.length === 0 }); })}>+ {k("addSize")}</button></div>
+        <div><button className="btn sm ghost" onClick={() => onChange((i) => { i.sizes.push({ id: newId(), name: blank(), price: i.price, preselected: i.sizes.length === 0, groupIds: [] }); })}>+ {k("addSize")}</button></div>
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <span className="small muted" style={{ width: "100%" }}>{k("labels")}</span>
@@ -296,5 +301,43 @@ function GroupForm({ g, lang, k, armed, onChange, onDelete }: { g: Group; lang: 
       <div><button className="btn sm ghost" onClick={() => onChange((x) => { x.options.push({ id: newId(), name: blank(), price: 0, preselected: false, soldOut: false }); })}>+ {k("addOption")}</button></div>
       <div><button className="link" onClick={onDelete}>{armed === `g${g.id}` ? k("confirmDel") : k("remove")}</button></div>
     </div>
+  );
+}
+
+function GloriaFoodImport({ rid, k }: { rid: string; k: (s: string) => string }) {
+  const [key, setKey] = useState("");
+  const [json, setJson] = useState<string | null>(null);
+  const [msg, setMsg] = useState("");
+  const [ready, setReady] = useState(false);
+  const [armed, setArmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const fill = (s: string, v: Record<string, number>) => Object.entries(v).reduce((a, [x, y]) => a.replace(`{${x}}`, String(y)), s);
+  async function run(apply: boolean) {
+    setBusy(true); setMsg("");
+    const res = await fetch(`/api/dashboard/${rid}/import`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(json ? { json, apply } : { key, apply }) });
+    const j = await res.json();
+    setBusy(false);
+    if (!res.ok) { setReady(false); setMsg(k(j.error === "key" ? "gfErrKey" : j.error === "format" ? "gfErrFormat" : "gfErrNet")); return; }
+    if (apply) { setMsg(k("gfDone")); setTimeout(() => location.reload(), 800); return; }
+    const r = j.report;
+    setMsg(fill(k("gfFound"), { c: r.categories, i: r.items, s: r.sizes, g: r.groups, o: r.options }) + (r.withSchedule ? " " + fill(k("gfSched"), { n: r.withSchedule }) : ""));
+    setReady(true);
+  }
+  return (
+    <details className="card" style={{ padding: 16 }}>
+      <summary style={{ cursor: "pointer", fontWeight: 600 }}>{k("gfTitle")}</summary>
+      <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
+        <p className="small muted" style={{ margin: 0 }}>{k("gfHelp")}</p>
+        <div className="row2">
+          <label className="f" htmlFor="gf-key">{k("gfKey")}<input type="text" id="gf-key" value={key} autoComplete="off" onChange={(e) => { setKey(e.target.value); setJson(null); setReady(false); }} /></label>
+          <label className="f" htmlFor="gf-file">{k("gfFile")}<input type="file" id="gf-file" accept="application/json,.json" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { setJson(await f.text()); setKey(""); setReady(false); } }} /></label>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <button className="btn sm ghost" disabled={busy || (!key.trim() && !json)} onClick={() => run(false)}>{k("gfPreview")}</button>
+          {ready && <button className="btn sm" disabled={busy} onClick={() => { if (armed) { setArmed(false); run(true); } else { setArmed(true); setTimeout(() => setArmed(false), 4000); } }}>{armed ? k("gfConfirm") : k("gfApply")}</button>}
+        </div>
+        {msg && <p className="small" style={{ margin: 0 }}>{msg}</p>}
+      </div>
+    </details>
   );
 }

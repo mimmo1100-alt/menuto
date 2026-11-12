@@ -24,7 +24,7 @@ npm run dev
 
 ## What's in phase 1 so far
 
-- Menu with sizes, reusable option groups (min/max, required, preselected), half & half pizza, sold-out items/options, labels
+- Menu with sizes (each size can add its own option groups), reusable option groups (min/max, required, preselected), half & half pizza, sold-out items/options, labels
 - Opening hours per service, special days, pause, scheduled orders with time slots (restaurant time zone)
 - Delivery areas drawn on a map (circle or free shape) with minimum order, fee and time; the customer drops a pin and the area is picked on the server (lowest minimum wins where areas overlap)
 - Coupons (percent, fixed, free delivery), VAT included or added
@@ -33,9 +33,10 @@ npm run dev
 - Live order tracking for the customer; restaurant screen with sound, 4-minute answer window, accept with prep time, decline/cancel with reason, ready, handed over
 - Night pre-orders wait silently until opening time
 - Emails to the customer (received, confirmed with time, declined/canceled with reason, missed, ready) and to the restaurant (new order), in the customer's language. Set RESEND_API_KEY and EMAIL_FROM to send; otherwise they are stored in the EmailLog table
+- Import a whole menu from GloriaFood (their "Fetch Menu" API key, or the menu JSON file): categories, items, sizes (GloriaFood size prices are added to the item price), option groups including size-specific ones, labels and kitchen names
 - Partner (reseller) panel: all restaurants with 7-day orders, sales and missed orders, add a restaurant with its owner login, every order across restaurants with filters and CSV export, and the "Supported by" line under each menu
 - Website button (`/embed.js`), ordering link and QR code on the dashboard's Publish page
 
 Maps use OpenStreetMap tiles and Nominatim address search. Both are fine for testing; before going live with many restaurants, switch to a paid tile/geocoding provider (their free services have strict usage limits).
 
-Planned next: Android order-taking app with Epson printing, GloriaFood menu import.
+Android order-taking app: see `android-app/`.
