@@ -8,7 +8,7 @@ export type PricedLine = {
 };
 
 export class OrderError extends Error {
-  constructor(public code: "item" | "closed" | "min" | "zone" | "invalid" | "coupon") { super(code); }
+  constructor(public code: "item" | "closed" | "min" | "zone" | "invalid" | "coupon" | "table") { super(code); }
 }
 
 /** Count rule for a group: returns [min, max] where max 0 = unlimited. */

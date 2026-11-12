@@ -53,14 +53,15 @@ export function buildReceipt(o: Full, template: Template, lang: Lang, origin: st
   L.push({ k: "text", text: r.phone, align: "center" });
   L.push({ k: "rule" });
   L.push({ k: "text", text: `${t(lang, o.type).toUpperCase()} · ${when}`, align: "center", bold: true, size: 2 });
+  if (o.table) L.push({ k: "text", text: `${c("table")} ${o.table}`, align: "center", bold: true, size: 2 });
   L.push({ k: "text", text: `${t(lang, o.payment)}`, align: "center", bold: true });
   L.push({ k: "rule" });
   L.push({ k: "pair", left: c("order"), right: `#${o.number}`, bold: true });
   L.push({ k: "pair", left: c("placed"), right: fmt(o.createdAt) });
   if (o.acceptedAt) L.push({ k: "pair", left: c("accepted"), right: fmt(o.acceptedAt) });
   L.push({ k: "rule" });
-  L.push({ k: "text", text: `${c("customer")}: ${o.firstName} ${o.lastName}`, bold: true });
-  L.push({ k: "text", text: o.phone });
+  L.push({ k: "text", text: `${c("customer")}: ${o.firstName} ${o.lastName}`.trim(), bold: true });
+  if (o.phone) L.push({ k: "text", text: o.phone });
   if (addr?.street) {
     L.push({ k: "text", text: `${addr.street}, ${addr.city ?? ""}`, bold: true });
     if (addr.more) L.push({ k: "text", text: addr.more });

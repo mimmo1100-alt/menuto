@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import type { PrismaClient } from "@prisma/client";
 
 const L = (it: string, en: string, ar: string) => ({ it, en, ar });
@@ -19,7 +20,7 @@ export async function createDemoRestaurant(db: PrismaClient, opts: { partnerId: 
       lng: 9.19,
       isDemo: true,
       partnerId,
-      services: ["PICKUP", "DELIVERY"],
+      services: ["PICKUP", "DELIVERY", "DINEIN"],
       notifyEmails,
       maxDaysAhead: 7,
       hours: { create: [{ days: [0, 1, 2, 3, 4, 5, 6], from: "11:00", to: "23:30" }] },
@@ -30,6 +31,7 @@ export async function createDemoRestaurant(db: PrismaClient, opts: { partnerId: 
         ],
       },
       coupons: { create: [{ code: "BENVENUTO10", kind: "percent", value: 10 }] },
+      tables: { create: Array.from({ length: 8 }, (_, i) => ({ name: String(i + 1), position: i, code: randomBytes(6).toString("base64url") })) },
     },
   });
 

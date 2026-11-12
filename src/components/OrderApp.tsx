@@ -6,7 +6,7 @@ import type { PubCategory, PubItem } from "@/lib/menu";
 import type { DaySlots } from "@/lib/availability";
 import MapPicker, { geocode, type LatLng, type MapZone } from "./MapPicker";
 import { zoneFor } from "@/lib/geo";
-import { DAYKEYS, LANGS, money as fmtMoney, pickLang, t as tt, tr, type Lang } from "@/lib/i18n";
+import { DAYKEYS, LANGS, money as fmtMoney, pickLang, t as tt, tableLabel, tr, type Lang } from "@/lib/i18n";
 
 type Svc = "PICKUP" | "DELIVERY" | "DINEIN";
 export type PageData = {
@@ -22,6 +22,9 @@ export type PageData = {
   };
   menu: PubCategory[];
   initialLang: Lang;
+  /** set when the page was opened from a table QR */
+  table?: { code: string; name: string } | null;
+  tableGone?: boolean;
 };
 
 type Line = { key: string; itemId: string; sizeId: string | null; optionIds: string[]; qty: number; instructions: string };
@@ -29,7 +32,8 @@ type Contact = { firstName: string; lastName: string; email: string; phone: stri
 type Address = { street: string; city: string; more: string };
 type When = { asap: true } | { asap: false; ymd: string; time: string };
 type Step = "contact" | "type" | "time" | "pay";
-const STEPS: Step[] = ["contact", "type", "time", "pay"];
+const ALL_STEPS: Step[] = ["contact", "type", "time", "pay"];
+const TABLE_STEPS: Step[] = ["contact", "pay"];
 type Totals = { subtotal: number; discount: number; deliveryFee: number; tax: number; total: number; couponCode: string | null };
 
 const LANG_NAMES: Record<Lang, string> = { it: "Italiano", en: "English", ar: "العربية" };
@@ -39,16 +43,19 @@ function save(k: string, v: unknown) { try { localStorage.setItem(k, JSON.string
 
 export default function OrderApp({ data }: { data: PageData }) {
   const R = data.restaurant;
+  const T = data.table ?? null;
+  // at a table: no type/time steps, the order is "at the table", as soon as possible
+  const STEPS = T ? TABLE_STEPS : ALL_STEPS;
   const router = useRouter();
   const [lang, setLang] = useState<Lang>(data.initialLang);
   const [screen, setScreen] = useState<"landing" | "menu" | "info" | "checkout">("landing");
   const [cart, setCart] = useState<Line[]>([]);
   const [sheet, setSheet] = useState<{ item: PubItem; sizeId: string | null; sel: Record<string, string[]>; qty: number; instructions: string; err: string } | null>(null);
   const [contact, setContact] = useState<Contact | null>(null);
-  const [type, setType] = useState<Svc | null>(null);
+  const [type, setType] = useState<Svc | null>(T ? "DINEIN" : null);
   const [address, setAddress] = useState<Address | null>(null);
   const [pin, setPin] = useState<LatLng | null>(null);
-  const [when, setWhen] = useState<When | null>(null);
+  const [when, setWhen] = useState<When | null>(T ? { asap: true } : null);
   const [pay, setPay] = useState<string | null>(null);
   const [editing, setEditing] = useState<Step | null>("contact");
   const [stepErr, setStepErr] = useState("");
@@ -73,7 +80,8 @@ export default function OrderApp({ data }: { data: PageData }) {
     if (retry) setScreen("checkout");
     const c = load<Contact | null>("menuto.contact", null);
     if (c) { setContact(c); }
-  }, [cartKey, data.initialLang]);
+    if (data.table) setScreen("menu"); // from a table QR, go straight to the menu
+  }, [cartKey, data.initialLang, data.table]);
   // inside the website overlay, Escape closes it (unless an item window is open)
   useEffect(() => {
     if (window.parent === window) return;
@@ -191,9 +199,18 @@ export default function OrderApp({ data }: { data: PageData }) {
     setStepErr("");
     const v = (k: string) => String(fd.get(k) ?? "").trim();
     if (s === "contact") {
-      const c = { firstName: v("firstName"), lastName: v("lastName"), email: v("email"), phone: v("phone"), marketingOk: fd.get("mkt") === "on" };
-      if (!c.firstName || !c.lastName || !/^\S+@\S+\.\S+$/.test(c.email) || c.phone.replace(/\D/g, "").length < 6) return setStepErr(t("fillRequired"));
-      setContact(c); save("menuto.contact", c);
+      if (T) {
+        // at the table only the name; keep the rest of a saved contact (then status emails still arrive)
+        const firstName = v("firstName");
+        if (!firstName) return setStepErr(t("fillRequired"));
+        const prev = contact ?? { firstName: "", lastName: "", email: "", phone: "", marketingOk: false };
+        const c = prev.firstName === firstName ? prev : { firstName, lastName: "", email: "", phone: "", marketingOk: false };
+        setContact(c);
+      } else {
+        const c = { firstName: v("firstName"), lastName: v("lastName"), email: v("email"), phone: v("phone"), marketingOk: fd.get("mkt") === "on" };
+        if (!c.firstName || !c.lastName || !/^\S+@\S+\.\S+$/.test(c.email) || c.phone.replace(/\D/g, "").length < 6) return setStepErr(t("fillRequired"));
+        setContact(c); save("menuto.contact", c);
+      }
     }
     const cleared = new Set<Step>();
     if (s === "type") {
@@ -231,17 +248,17 @@ export default function OrderApp({ data }: { data: PageData }) {
         body: JSON.stringify({
           lines: validCart.map(({ itemId, sizeId, optionIds, qty, instructions }) => ({ itemId, sizeId, optionIds, qty, instructions: instructions || undefined })),
           type, when, customer: contact, address: type === "DELIVERY" ? address : null, location: type === "DELIVERY" ? pin : null, payment: pay,
-          comments: comments || undefined, coupon: coupon ?? undefined, lang,
+          comments: comments || undefined, coupon: coupon ?? undefined, lang, tableCode: T?.code,
         }),
       });
       const j = await res.json();
       if (!res.ok) {
-        setPlaceErr(t(j.error === "closed" ? "errClosed" : j.error === "item" ? "errItem" : j.error === "min" ? "errMin" : "errGeneric"));
+        setPlaceErr(t(j.error === "table" ? "errTable" : j.error === "closed" ? (T ? "dineClosed" : "errClosed") : j.error === "item" ? "errItem" : j.error === "min" ? "errMin" : "errGeneric"));
         setSending(false); return;
       }
       save(`${cartKey}.last`, validCart);
       setCart([]); save(cartKey, []);
-      router.push(`/r/${R.slug}/o/${j.id}`);
+      router.push(`/r/${R.slug}/o/${j.id}${T ? `?t=${encodeURIComponent(T.code)}` : ""}`);
     } catch {
       setPlaceErr(t("errGeneric")); setSending(false);
     }
@@ -252,11 +269,12 @@ export default function OrderApp({ data }: { data: PageData }) {
     : R.openNow ? <span className="pill ok"><span className="dot" />{t("openNow")}</span>
     : <span className="pill warn"><span className="dot" />{Object.values(R.slots).some((d) => d.length) ? t("closedNow") : t("closedNoPre")}</span>;
 
-  const canOrder = R.accepting && R.services.some((s) => R.asap[s] || (R.slots[s] ?? []).length > 0);
+  const canOrder = R.accepting && (T ? !!R.asap.DINEIN : R.services.some((s) => R.asap[s] || (R.slots[s] ?? []).length > 0));
 
   const header = (
     <div className="top"><div className="wrap">
       <h1>{R.name}</h1>
+      {T && <span className="pill tablepill">{tableLabel(lang, T.name)}</span>}
       <button className="iconbtn" aria-label={t("menu")} aria-pressed={screen === "menu"} onClick={() => go("menu")}><Icon name="menu" /></button>
       <button className="iconbtn" aria-label={t("info")} aria-pressed={screen === "info"} onClick={() => go("info")}><Icon name="info" /></button>
       <button className="iconbtn" aria-label={t("cart")} aria-pressed={screen === "checkout"} onClick={() => go("checkout")}><Icon name="cart" />{count > 0 && <span className="badge num">{count}</span>}</button>
@@ -306,6 +324,7 @@ export default function OrderApp({ data }: { data: PageData }) {
           <h2>{R.name}</h2>
           {statusPill}
           <p>{R.address}</p>
+          {data.tableGone && <p className="note">{t("tableGone")}</p>}
           <button className="btn" disabled={!canOrder} onClick={() => go("menu")}>{R.openNow ? t("seeMenu") : t("seeMenuAhead")}</button>
           {R.zones.length > 0 && <div className="facts num">{R.zones.map((z) => <span key={z.id}>{z.name}: {t("min")} {money(z.minOrder)} · {t("fee")} {money(z.fee)}</span>)}</div>}
         </section>
@@ -318,7 +337,12 @@ export default function OrderApp({ data }: { data: PageData }) {
   if (screen === "menu") {
     main = (
       <div className="wrap"><div className="layout"><div style={{ minWidth: 0 }}>
-        {!R.openNow && <div style={{ marginTop: 4 }}>{statusPill}</div>}
+        {T ? (
+          <div className="tablebar">
+            <b>{t("atTable", { name: tableLabel(lang, T.name) })}</b>
+            <span className="small muted">{canOrder ? t("atTableSub") : t("dineClosed")}</span>
+          </div>
+        ) : !R.openNow && <div style={{ marginTop: 4 }}>{statusPill}</div>}
         <nav className="cats" aria-label={t("menu")}>
           {data.menu.map((c) => <a key={c.id} href={`#cat-${c.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(`cat-${c.id}`)?.scrollIntoView({ behavior: "smooth" }); }}>{tr(c.name, lang)}</a>)}
         </nav>
@@ -389,7 +413,7 @@ export default function OrderApp({ data }: { data: PageData }) {
                   <div key={s} className={`step${done && !isEd ? " done" : ""}${locked ? " locked" : ""}`}>
                     <h3><span className="n num">{done && !isEd ? "✓" : i + 1}</span>{titles[s]}</h3>
                     {isEd ? (
-                      <StepForm step={s} lang={lang} R={R} contact={contact} type={type} address={address} location={pin} when={when} pay={pay} err={stepErr}
+                      <StepForm step={s} lang={lang} R={R} atTable={!!T} contact={contact} type={type} address={address} location={pin} when={when} pay={pay} err={stepErr}
                         onSubmit={(fd) => submitStep(s, fd)} money={money} />
                     ) : done ? (
                       <div className="sum"><div>{summary(s)}</div><button className="link" onClick={() => { setEditing(s); setStepErr(""); }}>{t("change")}</button></div>
@@ -421,7 +445,7 @@ export default function OrderApp({ data }: { data: PageData }) {
   }
 
   function summary(s: Step) {
-    if (s === "contact" && contact) return <>{contact.firstName} {contact.lastName}<br /><span className="muted small">{contact.email} · {contact.phone}</span></>;
+    if (s === "contact" && contact) return T ? <>{contact.firstName}<br /><span className="muted small">{tableLabel(lang, T.name)}</span></> : <>{contact.firstName} {contact.lastName}<br /><span className="muted small">{contact.email} · {contact.phone}</span></>;
     if (s === "type" && type) return type === "DELIVERY" && address ? <>{t("DELIVERY")}<br /><span className="muted small">{address.street}, {address.city}{address.more ? ` · ${address.more}` : ""}{zone ? ` · ${zone.name}` : ""}</span></> : t(type);
     if (s === "time" && when) return when.asap ? t("asap") : <>{dayLabel(when.ymd)} · <span className="num">{when.time}</span></>;
     if (s === "pay" && pay) return t(pay);
@@ -506,7 +530,7 @@ function FragmentRow({ dt, dd }: { dt: string; dd: string }) {
 }
 
 function StepForm(p: {
-  step: Step; lang: Lang; R: PageData["restaurant"]; contact: Contact | null; type: Svc | null; address: Address | null; location: LatLng | null;
+  step: Step; lang: Lang; R: PageData["restaurant"]; atTable?: boolean; contact: Contact | null; type: Svc | null; address: Address | null; location: LatLng | null;
   when: When | null; pay: string | null; err: string; onSubmit: (fd: FormData) => void; money: (c: number) => string;
 }) {
   const t = (k: string, v?: Record<string, string | number>) => tt(p.lang, k, v);
@@ -518,6 +542,14 @@ function StepForm(p: {
   const err = p.err ? <p className="err">{p.err}</p> : null;
   const submit = (e: React.FormEvent<HTMLFormElement>) => { e.preventDefault(); p.onSubmit(new FormData(e.currentTarget)); };
 
+  if (p.step === "contact" && p.atTable) {
+    return (
+      <form className="form" noValidate onSubmit={submit}>
+        <label className="f" htmlFor="c-first">{t("yourName")} *<input type="text" id="c-first" name="firstName" autoComplete="given-name" defaultValue={p.contact?.firstName} /></label>
+        {err}<div><button className="btn" type="submit">{t("save")}</button></div>
+      </form>
+    );
+  }
   if (p.step === "contact") {
     const c = p.contact;
     return (

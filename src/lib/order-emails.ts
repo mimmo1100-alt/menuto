@@ -77,8 +77,8 @@ function render(o: Full, kind: EmailKind, lang: Lang) {
 <tr><td style="padding:24px 24px 8px;color:#5d6455;font-size:14px">${esc(r.name)}</td></tr>
 <tr><td style="padding:0 24px"><h1 style="margin:0 0 6px;font-size:24px">${esc(title)}</h1>${sub ? `<p style="margin:0 0 12px;color:#5d6455">${esc(sub)}</p>` : ""}</td></tr>
 <tr><td style="padding:8px 24px"><a href="${url}" style="display:inline-block;background:#c4381f;color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:999px">${esc(cta)}</a></td></tr>
-<tr><td style="padding:16px 24px 0;font-size:14px">${esc(c("order"))} <b>#${o.number}</b> · ${esc(t(lang, o.type))} · ${esc(c("when"))}: ${esc(when)} · ${esc(t(lang, o.payment))}</td></tr>
-${kind === "new_order" ? `<tr><td style="padding:6px 24px 0;font-size:14px">${esc(c("customer"))}: <b>${esc(o.firstName)} ${esc(o.lastName)}</b> · ${esc(o.phone)} · ${esc(o.email)}</td></tr>` : ""}
+<tr><td style="padding:16px 24px 0;font-size:14px">${esc(c("order"))} <b>#${o.number}</b> · ${esc(t(lang, o.type))}${o.table ? ` <b>${esc(o.table)}</b>` : ""} · ${esc(c("when"))}: ${esc(when)} · ${esc(t(lang, o.payment))}</td></tr>
+${kind === "new_order" ? `<tr><td style="padding:6px 24px 0;font-size:14px">${esc(c("customer"))}: <b>${esc(o.firstName)} ${esc(o.lastName)}</b>${[o.phone, o.email].filter(Boolean).map((x) => ` · ${esc(x)}`).join("")}</td></tr>` : ""}
 ${addr?.street ? `<tr><td style="padding:6px 24px 0;font-size:14px">${esc(c("address"))}: ${esc(addr.street)}, ${esc(addr.city)}${addr.more ? ` · ${esc(addr.more)}` : ""}</td></tr>` : ""}
 ${o.comments ? `<tr><td style="padding:8px 24px 0;font-size:14px"><i>“${esc(o.comments)}”</i></td></tr>` : ""}
 <tr><td style="padding:12px 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #dfe1d6;font-size:15px">${rows}
@@ -104,10 +104,11 @@ export async function orderEmails(orderId: string, kind: EmailKind) {
       const lang = (o.restaurant.defaultLang as Lang) ?? "it";
       for (const to of o.restaurant.notifyEmails) {
         const { subject, html } = render(o, kind, lang);
-        await sendMail({ to, subject, html, kind, orderId, replyTo: o.email });
+        await sendMail({ to, subject, html, kind, orderId, replyTo: o.email || undefined });
       }
       return;
     }
+    if (!o.email) return; // at the table the customer may leave no email
     if (kind === "ready" && !o.restaurant.emailOnReady) return;
     const { subject, html } = render(o, kind, (o.lang as Lang) ?? "it");
     await sendMail({ to: o.email, subject, html, kind, orderId, replyTo: o.restaurant.notifyEmails[0] });

@@ -115,6 +115,7 @@ model Restaurant {
   optionGroups OptionGroup[]
   coupons      Coupon[]
   orders       Order[]
+  tables       Table[]
 }
 
 model OpeningHours {
@@ -311,7 +312,10 @@ model Order {
   marketingOk   Boolean     @default(false)
   address       Json?
   zoneId        String?
+  /// table name at the time of the order (kept even if the table is renamed or removed)
   table         String?
+  tableId       String?
+  tableRef      Table?      @relation(fields: [tableId], references: [id], onDelete: SetNull)
   payment       String
   comments      String?
   lang          String      @default("it")
@@ -375,4 +379,19 @@ model DailyReportSent {
   sentAt       DateTime @default(now())
 
   @@id([restaurantId, ymd])
+}
+
+/// A table for ordering at the table: its QR opens /r/[slug]?t=[code]. The code is random so table links can't be guessed.
+model Table {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  code         String     @unique
+  active       Boolean    @default(true)
+  position     Int        @default(0)
+  createdAt    DateTime   @default(now())
+  orders       Order[]
+
+  @@index([restaurantId])
 }

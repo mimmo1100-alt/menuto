@@ -17,12 +17,14 @@ export const orderSchema = z.object({
   type: z.enum(["PICKUP", "DELIVERY", "DINEIN"]),
   when: z.union([z.object({ asap: z.literal(true) }), z.object({ asap: z.literal(false), ymd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), time: z.string().regex(/^\d{2}:\d{2}$/) })]),
   customer: z.object({
-    firstName: z.string().trim().min(1).max(60), lastName: z.string().trim().min(1).max(60),
-    email: z.string().trim().email().max(120), phone: z.string().trim().min(6).max(30), marketingOk: z.boolean().optional(),
+    // at the table only the first name is needed; the other fields are checked in createOrder for pickup/delivery
+    firstName: z.string().trim().min(1).max(60), lastName: z.string().trim().max(60).default(""),
+    email: z.string().trim().max(120).default(""), phone: z.string().trim().max(30).default(""), marketingOk: z.boolean().optional(),
   }),
   address: z.object({ street: z.string().trim().min(2).max(120), city: z.string().trim().min(1).max(80), more: z.string().trim().max(160).optional() }).nullish(),
   location: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).nullish(),
-  table: z.string().trim().max(20).nullish(),
+  /// code from the table QR; required for DINEIN, the table name is taken from the database
+  tableCode: z.string().trim().max(40).nullish(),
   payment: z.string().min(1).max(30),
   comments: z.string().trim().max(500).optional(),
   coupon: z.string().trim().max(40).optional(),
@@ -61,6 +63,11 @@ export async function createOrder(slug: string, raw: unknown) {
   const allowed = ((r.payments as Record<string, string[]>)[service] ?? []);
   if (!allowed.includes(input.payment)) throw new OrderError("invalid");
   if (service === "DELIVERY" && !input.address) throw new OrderError("invalid");
+  const c = input.customer;
+  if (service !== "DINEIN" && (!c.lastName || !/^\S+@\S+\.\S+$/.test(c.email) || c.phone.replace(/\D/g, "").length < 6)) throw new OrderError("invalid");
+  if (c.email && !/^\S+@\S+\.\S+$/.test(c.email)) throw new OrderError("invalid");
+  const table = service === "DINEIN" ? await findTable(r.id, input.tableCode) : null;
+  if (service === "DINEIN" && !table) throw new OrderError("table");
   const { lines, zone, totals } = await quote(r, input);
 
   const now = new Date();
@@ -80,7 +87,7 @@ export async function createOrder(slug: string, raw: unknown) {
             asap: input.when.asap, fulfillAt,
             firstName: input.customer.firstName, lastName: input.customer.lastName, email: input.customer.email,
             phone: input.customer.phone, marketingOk: !!input.customer.marketingOk,
-            address: service === "DELIVERY" ? { ...input.address!, ...(input.location ?? {}) } : undefined, zoneId: zone?.id, table: input.table ?? null,
+            address: service === "DELIVERY" ? { ...input.address!, ...(input.location ?? {}) } : undefined, zoneId: zone?.id, table: table?.name ?? null, tableId: table?.id ?? null,
             payment: input.payment, comments: input.comments || null, lang: input.lang, couponCode: totals.couponCode,
             subtotal: totals.subtotal, discount: totals.discount, deliveryFee: totals.deliveryFee, tax: totals.tax, total: totals.total,
             prepMin, acceptedAt: auto ? now : null,
@@ -103,6 +110,13 @@ export async function createOrder(slug: string, raw: unknown) {
     }
   }
   throw new OrderError("invalid");
+}
+
+/** An active table of this restaurant by its QR code, or null. */
+export async function findTable(restaurantId: string, code: string | null | undefined) {
+  if (!code) return null;
+  const t = await db.table.findUnique({ where: { code }, select: { id: true, name: true, code: true, active: true, restaurantId: true } });
+  return t && t.active && t.restaurantId === restaurantId ? t : null;
 }
 
 /** Orders still PENDING past their deadline become MISSED. Pre-orders made while closed wait until opening. Returns the ids that just became missed. */

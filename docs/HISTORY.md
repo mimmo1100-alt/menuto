@@ -50,4 +50,5 @@ The first chat (12 November 2026), in order. A new session should read this, the
 
 - Repo attached to a new cloud session; read the notes and continued.
 - Built **sales reports** (`/dashboard/reports`) and the **end-of-day email** (sent every morning for the day before, through Vercel Cron in `vercel.json`; once per restaurant/day via the `DailyReportSent` table; switch in Settings → Emails).
-- **Next:** QR ordering at the table.
+- Built **ordering at the table**: `Table` model with a random code per table, Tables page in the dashboard with printable QR cards, table mode on the ordering page (name + payment only), table shown on the kitchen screen, receipts and emails. "At the table" is offered only from a table QR.
+- **Next:** table reservations.

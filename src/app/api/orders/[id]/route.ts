@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const o = await db.order.findUnique({
     where: { id },
     select: {
-      id: true, number: true, status: true, type: true, asap: true, fulfillAt: true, readyAt: true, rejectReason: true,
+      id: true, number: true, status: true, type: true, table: true, asap: true, fulfillAt: true, readyAt: true, rejectReason: true,
       payment: true, subtotal: true, discount: true, deliveryFee: true, tax: true, total: true, createdAt: true,
       items: { select: { name: true, sizeName: true, qty: true, options: true, total: true } },
       restaurant: { select: { name: true, slug: true, currency: true, taxIncluded: true, taxName: true } },

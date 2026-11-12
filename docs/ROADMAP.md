@@ -15,6 +15,7 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 | Android app | Background watcher, alarm, Bluetooth ESC/POS printing, print queue | Builds on CI; not yet run on a phone or printer |
 | GloriaFood import | Fetch Menu API v2 key or JSON file | Their public sample; not yet with a real key |
 | Sales reports | `/dashboard/reports`: today / yesterday / 7 / 30 days / month / custom; sales, orders, average, new vs returning customers, trend chart, payment method, order type, best sellers, busiest hours and days, lost orders, CSV. End-of-day email every morning (Vercel Cron 05:00 UTC, on/off in Settings) | Numbers checked against the DB; Playwright it/ar, desktop/phone; email only logged (no Resend key) |
+| Ordering at the table | `/dashboard/tables`: turn on, payment at the table, add/rename/disable tables, print QR cards (A4, 6 per page, save as PDF). QR opens `/r/[slug]?t=code`: straight to the menu, only the first name + payment, order arrives with the table in big type (kitchen screen, receipts, restaurant email) | API checks (fake table name ignored, unknown/disabled table refused); Playwright customer phone it/ar, kitchen, tables page, print PDF |
 | Hosting prep | Migrations on deploy, `/setup` first run | Production build on an empty DB |
 
 ## Waiting on the owner
@@ -27,11 +28,10 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 
 ## Next (in this order)
 
-1. QR ordering at the table (per-table codes, PDF to print).
-2. Table reservations.
-3. Online payments with Stripe (paid add-on).
-4. Turn the Playwright scripts into `tests/e2e` + CI.
-5. Before the restaurants go live: rate limiting on public APIs, password reset, staff accounts from the dashboard, privacy/terms pages (GDPR), backups.
+1. Table reservations.
+2. Online payments with Stripe (paid add-on).
+3. Turn the Playwright scripts into `tests/e2e` + CI.
+4. Before the restaurants go live: rate limiting on public APIs, password reset, staff accounts from the dashboard, privacy/terms pages (GDPR), backups.
 
 ## Known gaps
 

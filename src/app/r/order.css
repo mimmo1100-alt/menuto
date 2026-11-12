@@ -181,3 +181,6 @@ textarea{min-height:70px;resize:vertical}
 
 /* opened from the website button: keep clear of the overlay close button */
 @media (max-width:700px){.embedded .top .wrap{padding-right:max(60px,env(safe-area-inset-right,0px))}}
+/* ordering at the table */
+.tablepill{background:var(--accent);color:var(--accent-fg);border-color:transparent;font-weight:700;white-space:nowrap}
+.tablebar{display:grid;gap:2px;margin-top:8px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);border:1px solid var(--accent)}

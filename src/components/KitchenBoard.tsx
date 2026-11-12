@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LOCALE, money, pickLang, t as ct, tr, type Lang } from "@/lib/i18n";
+import { LOCALE, money, pickLang, t as ct, tableLabel, tr, type Lang } from "@/lib/i18n";
 import DashNav from "./DashNav";
 
 type Item = { id: string; name: Record<string, string>; sizeName: Record<string, string> | null; qty: number; options: { name: Record<string, string> }[]; instructions: string | null; total: number };
@@ -47,7 +47,7 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
   const [toast, setToast] = useState("");
   const actx = useRef<AudioContext | null>(null);
   const k = (key: string) => K[lang][key] ?? key;
-  const t = (key: string) => ct(lang, key);
+  const t = (key: string, v?: Record<string, string | number>) => ct(lang, key, v);
   const fmt = (c: number) => money(c, lang, restaurant.currency);
   const time = (iso: string) => new Date(iso).toLocaleString(LOCALE[lang], { weekday: "short", hour: "2-digit", minute: "2-digit" });
 
@@ -158,7 +158,7 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
   }
   const pausedUntil = pause?.pausedUntil && new Date(pause.pausedUntil).getTime() > now ? new Date(pause.pausedUntil) : null;
   async function copy(o: Order) {
-    const text = [`#${o.number} ${o.firstName} ${o.lastName}`, o.phone, o.address ? `${o.address.street}, ${o.address.city}${o.address.more ? " · " + o.address.more : ""}` : ""].filter(Boolean).join("\n");
+    const text = [`#${o.number} ${o.firstName} ${o.lastName}`.trim(), o.table ? tableLabel(lang, o.table) : "", o.phone, o.address ? `${o.address.street}, ${o.address.city}${o.address.more ? " · " + o.address.more : ""}` : ""].filter(Boolean).join("\n");
     try { await navigator.clipboard.writeText(text); setToast(k("copied")); setTimeout(() => setToast(""), 1500); } catch { /* clipboard blocked */ }
   }
 
@@ -250,6 +250,7 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
               <article key={o.id} className={`card order${o.status === "PENDING" && !queued ? " new" : ""}`}>
                 <div className="oh">
                   <span className="oid num">#{o.number}</span>
+                  {o.table && <span className="tablebadge">{tableLabel(lang, o.table)}</span>}
                   <StatusPill o={o} k={k} t={t} />
                 </div>
                 <div className="small muted">

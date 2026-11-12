@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LANGS, LOCALE, money, pickLang, t as tt, tr, type Lang } from "@/lib/i18n";
+import { LANGS, LOCALE, money, pickLang, t as tt, tableLabel, tr, type Lang } from "@/lib/i18n";
 
 type O = {
-  id: string; number: number; status: string; type: string; asap: boolean; fulfillAt: string | null; readyAt: string | null; rejectReason: string | null;
+  id: string; number: number; status: string; type: string; table: string | null; asap: boolean; fulfillAt: string | null; readyAt: string | null; rejectReason: string | null;
   payment: string; subtotal: number; discount: number; deliveryFee: number; tax: number; total: number;
   items: { name: Record<string, string>; sizeName: Record<string, string> | null; qty: number; options: { name: Record<string, string> }[]; total: number }[];
   restaurant: { name: string; slug: string; currency: string; taxIncluded: boolean; taxName: string };
@@ -14,7 +14,7 @@ export default function OrderTracker({ slug, id, initialLang }: { slug: string; 
   const [lang, setLang] = useState<Lang>(initialLang);
   const [o, setO] = useState<O | null>(null);
   const [gone, setGone] = useState(false);
-  const t = (k: string) => tt(lang, k);
+  const t = (k: string, v?: Record<string, string | number>) => tt(lang, k, v);
 
   useEffect(() => {
     let saved: string | null = null;
@@ -22,6 +22,10 @@ export default function OrderTracker({ slug, id, initialLang }: { slug: string; 
     const l = saved && (LANGS as readonly string[]).includes(saved) ? (saved as Lang) : pickLang(navigator.languages, initialLang);
     setLang(l); document.documentElement.lang = l; document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
   }, [initialLang]);
+
+  // came from a table QR: links back to the menu keep the table
+  const [tableQ, setTableQ] = useState("");
+  useEffect(() => { setTableQ(encodeURIComponent(new URLSearchParams(location.search).get("t") ?? "")); }, []);
 
   useEffect(() => {
     let stop = false;
@@ -66,9 +70,10 @@ export default function OrderTracker({ slug, id, initialLang }: { slug: string; 
           {o.type === "DELIVERY" && <div><span>{t("deliveryFee")}</span><span>{money(o.deliveryFee, lang, cur)}</span></div>}
           <div className="grand"><span>{t("total")}</span><span>{money(o.total, lang, cur)}</span></div>
         </div>
-        <div className="meta"><span>{t(o.type)} · {o.asap ? t("asap") : o.fulfillAt ? fmtTime(o.fulfillAt) : ""}</span><span>{t(o.payment)}</span></div>
+        <div className="meta"><span>{t(o.type)}{o.table ? ` · ${tableLabel(lang, o.table)}` : ""} · {o.asap ? t("asap") : o.fulfillAt ? fmtTime(o.fulfillAt) : ""}</span><span>{t(o.payment)}</span></div>
       </div>
-      {failed ? <a className="btn" href={`/r/${slug}?retry=1`}>{t("tryAgain")}</a> : <a className="btn ghost" href={`/r/${slug}`}>{t("backToMenu")}</a>}
+      {failed ? <a className="btn" href={`/r/${slug}?retry=1${tableQ ? `&t=${tableQ}` : ""}`}>{t("tryAgain")}</a>
+        : <a className="btn ghost" href={`/r/${slug}${tableQ ? `?t=${tableQ}` : ""}`}>{tableQ ? t("orderMore") : t("backToMenu")}</a>}
     </div></div>
   );
 }
