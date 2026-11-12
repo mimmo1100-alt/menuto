@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LOCALE, money, pickLang, t as ct, tr, type Lang } from "@/lib/i18n";
+import DashNav from "./DashNav";
 
 type Item = { id: string; name: Record<string, string>; sizeName: Record<string, string> | null; qty: number; options: { name: Record<string, string> }[]; instructions: string | null; total: number };
 type Order = {
@@ -13,9 +14,9 @@ type Order = {
 type R = { id: string; name: string; slug: string; currency: string };
 
 const K: Record<Lang, Record<string, string>> = {
-  it: { orders: "Ordini", tPending: "Nuovi", tActive: "In preparazione", tDone: "Chiusi", soundOn: "Suono attivo", soundOff: "Attiva suono", acceptIn: "Accetta, pronto tra (minuti):", reject: "Rifiuta", cancel: "Annulla ordine", markReady: "Pronto", complete: "Consegnato", reason: "Motivo", noOrders: "Nessun ordine qui.", newOrder: "Nuovo ordine", queued: "Pre-ordine: suonerà all'apertura", respond: "Rispondi entro", maps: "Apri in Maps", copy: "Copia dati", copied: "Copiato", for: "Per", menuPage: "Pagina menu", logout: "Esci", offline: "Connessione persa. Riprovo…", missed: "Perso" },
-  en: { orders: "Orders", tPending: "New", tActive: "Preparing", tDone: "Closed", soundOn: "Sound on", soundOff: "Turn on sound", acceptIn: "Accept, ready in (minutes):", reject: "Decline", cancel: "Cancel order", markReady: "Ready", complete: "Handed over", reason: "Reason", noOrders: "No orders here.", newOrder: "New order", queued: "Pre-order: rings at opening time", respond: "Answer within", maps: "Open in Maps", copy: "Copy details", copied: "Copied", for: "For", menuPage: "Menu page", logout: "Log out", offline: "Connection lost. Retrying…", missed: "Missed" },
-  ar: { orders: "الطلبات", tPending: "جديدة", tActive: "قيد التحضير", tDone: "منتهية", soundOn: "الصوت يعمل", soundOff: "شغّل الصوت", acceptIn: "اقبل، جاهز خلال (دقيقة):", reject: "رفض", cancel: "إلغاء الطلب", markReady: "جاهز", complete: "تم التسليم", reason: "السبب", noOrders: "لا توجد طلبات هنا.", newOrder: "طلب جديد", queued: "طلب مسبق: هيرن وقت الفتح", respond: "رد خلال", maps: "افتح في الخرائط", copy: "انسخ البيانات", copied: "تم النسخ", for: "موعد", menuPage: "صفحة المنيو", logout: "خروج", offline: "الاتصال مقطوع. بنحاول تاني…", missed: "فات" },
+  it: { orders: "Ordini", tPending: "Nuovi", tActive: "In preparazione", tDone: "Chiusi", soundOn: "Suono attivo", soundOff: "Attiva suono", acceptIn: "Accetta, pronto tra (minuti):", reject: "Rifiuta", cancel: "Annulla ordine", markReady: "Pronto", complete: "Consegnato", reason: "Motivo", noOrders: "Nessun ordine qui.", newOrder: "Nuovo ordine", queued: "Pre-ordine: suonerà all'apertura", respond: "Rispondi entro", maps: "Apri in Maps", copy: "Copia dati", copied: "Copiato", for: "Per", offline: "Connessione persa. Riprovo…", missed: "Perso" },
+  en: { orders: "Orders", tPending: "New", tActive: "Preparing", tDone: "Closed", soundOn: "Sound on", soundOff: "Turn on sound", acceptIn: "Accept, ready in (minutes):", reject: "Decline", cancel: "Cancel order", markReady: "Ready", complete: "Handed over", reason: "Reason", noOrders: "No orders here.", newOrder: "New order", queued: "Pre-order: rings at opening time", respond: "Answer within", maps: "Open in Maps", copy: "Copy details", copied: "Copied", for: "For", offline: "Connection lost. Retrying…", missed: "Missed" },
+  ar: { orders: "الطلبات", tPending: "جديدة", tActive: "قيد التحضير", tDone: "منتهية", soundOn: "الصوت يعمل", soundOff: "شغّل الصوت", acceptIn: "اقبل، جاهز خلال (دقيقة):", reject: "رفض", cancel: "إلغاء الطلب", markReady: "جاهز", complete: "تم التسليم", reason: "السبب", noOrders: "لا توجد طلبات هنا.", newOrder: "طلب جديد", queued: "طلب مسبق: هيرن وقت الفتح", respond: "رد خلال", maps: "افتح في الخرائط", copy: "انسخ البيانات", copied: "تم النسخ", for: "موعد", offline: "الاتصال مقطوع. بنحاول تاني…", missed: "فات" },
 };
 const REASONS = ["rTooBusy", "rClosed", "rItem", "rArea", "rOther"];
 
@@ -102,18 +103,7 @@ export default function KitchenBoard({ restaurant, restaurants }: { restaurant: 
 
   return (
     <>
-      <div className="dash-top"><div className="wrap">
-        <b>Menuto</b>
-        <a href="/dashboard/orders" aria-current="page">{k("orders")}</a>
-        <a href={`/r/${restaurant.slug}`} target="_blank" rel="noreferrer">{k("menuPage")}</a>
-        <span className="sp" />
-        {restaurants.length > 1 && (
-          <select className="langsel" value={restaurant.id} aria-label="Ristorante" onChange={(e) => (location.href = `/dashboard/orders?r=${e.target.value}`)}>
-            {restaurants.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
-        )}
-        <button onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); location.href = "/login"; }}>{k("logout")}</button>
-      </div></div>
+      <DashNav lang={lang} current="orders" restaurant={restaurant} restaurants={restaurants} />
       <div className="wrap">
         <div className="kbar">
           <h2>{k("orders")} · {restaurant.name}</h2>
