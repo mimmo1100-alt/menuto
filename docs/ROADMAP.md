@@ -16,21 +16,24 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 | GloriaFood import | Fetch Menu API v2 key or JSON file | Their public sample; not yet with a real key |
 | Sales reports | `/dashboard/reports`: today / yesterday / 7 / 30 days / month / custom; sales, orders, average, new vs returning customers, trend chart, payment method, order type, best sellers, busiest hours and days, lost orders, CSV. End-of-day email every morning (Vercel Cron 05:00 UTC, on/off in Settings) | Numbers checked against the DB; Playwright it/ar, desktop/phone; email only logged (no Resend key) |
 | Ordering at the table | `/dashboard/tables`: turn on, payment at the table, add/rename/disable tables, print QR cards (A4, 6 per page, save as PDF). QR opens `/r/[slug]?t=code`: straight to the menu, only the first name + payment, order arrives with the table in big type (kitchen screen, receipts, restaurant email) | API checks (fake table name ignored, unknown/disabled table refused); Playwright customer phone it/ar, kitchen, tables page, print PDF |
+| Go-live essentials | Forgot password (1-hour link) + change password; Team page (owner adds/removes owners and staff; staff see only Orders and Team); rate limits (login, reset, orders, quotes); privacy notice + order terms per restaurant (`/r/[slug]/privacy`, `/terms`, it/en) with legal details in Settings; nightly encrypted DB backup (GitHub Actions, `docs/BACKUP.md`) | API + Playwright; backup dump→encrypt→restore tested locally (not yet on GitHub: needs the secrets) |
 | Hosting prep | Migrations on deploy, `/setup` first run | Production build on an empty DB |
 
 ## Waiting on the owner
 
-1. **Deploy**: vercel.com → import `menuto` → Storage: add Neon Postgres → Redeploy → open the site → `/setup`.
+1. **Deploy**: vercel.com → import `menuto` → Storage: add Neon Postgres (**region Europe / Frankfurt**, for GDPR) → Redeploy → open the site → `/setup`.
 2. Install the APK from the latest GitHub release on the restaurant phone; pair the Epson printer; test print.
 3. GloriaFood "Fetch Menu" key of the demo restaurant GUSTO GIUSTO, to test the import for real.
 4. Later: Resend account (emails), domain, Stripe (online payments).
-5. Optional, in Vercel → Settings → Environment Variables: `CRON_SECRET` (any long random text) so only Vercel can trigger the morning report.
+5. Backups: add the GitHub secrets `BACKUP_DATABASE_URL` and `BACKUP_PASSPHRASE` (steps in `docs/BACKUP.md`).
+6. For each restaurant: Settings → legal details (company name, VAT number, privacy email). Have a lawyer look at the privacy/terms text once.
+7. Optional, in Vercel → Settings → Environment Variables: `CRON_SECRET` (any long random text) so only Vercel can trigger the morning report.
 
 ## Next (in this order)
 
-1. Before the restaurants go live: password reset, staff accounts from the dashboard, rate limiting on public APIs, privacy/terms pages (GDPR), backups.
-2. Online payments with Stripe (paid add-on).
-3. Turn the Playwright scripts into `tests/e2e` + CI.
+1. Online payments with Stripe (paid add-on).
+2. Turn the Playwright scripts into `tests/e2e` + CI.
+3. Later, nice to have: delete/export one customer's data from the dashboard (GDPR requests are handled by hand until then).
 
 Later (after March 2027): table reservations. The owner's 6 restaurants don't use reservations in GloriaFood (owner, 12 Nov 2026).
 

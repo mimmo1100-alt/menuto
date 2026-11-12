@@ -13,6 +13,7 @@ export const settingsSchema = z.object({
   lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), allowOutsideZones: z.boolean(),
   address: z.string().trim().min(1).max(120), city: z.string().trim().min(1).max(80), postcode: z.string().trim().max(12),
   defaultLang: z.enum(["it", "en", "ar"]),
+  legalName: z.string().trim().max(120), vatNumber: z.string().trim().max(30), privacyEmail: z.string().trim().email().max(120).or(z.literal("")),
   acceptingOrders: z.boolean(),
   pause: z.object({ until: z.string().datetime().nullable(), services: z.array(svc), message: z.string().max(200) }),
   services: z.array(svc).min(1),
@@ -47,7 +48,7 @@ export async function loadSettings(restaurantId: string): Promise<SettingsEdit &
   });
   const pay = r.payments as Record<string, string[]>;
   return {
-    name: r.name, phone: r.phone, lat: r.lat ?? 45.4642, lng: r.lng ?? 9.19, allowOutsideZones: r.allowOutsideZones, address: r.address, city: r.city, postcode: r.postcode ?? "", defaultLang: r.defaultLang as "it",
+    name: r.name, phone: r.phone, lat: r.lat ?? 45.4642, lng: r.lng ?? 9.19, allowOutsideZones: r.allowOutsideZones, address: r.address, city: r.city, postcode: r.postcode ?? "", defaultLang: r.defaultLang as "it", legalName: r.legalName ?? "", vatNumber: r.vatNumber ?? "", privacyEmail: r.privacyEmail ?? "",
     acceptingOrders: r.acceptingOrders,
     pause: { until: r.pausedUntil && r.pausedUntil > new Date() ? r.pausedUntil.toISOString() : null, services: r.pausedServices, message: r.pauseMessage ?? "" },
     services: r.services,
@@ -74,7 +75,7 @@ export async function saveSettings(restaurantId: string, s: SettingsEdit) {
     await tx.restaurant.update({
       where: { id: restaurantId },
       data: {
-        name: s.name, phone: s.phone, lat: s.lat, lng: s.lng, allowOutsideZones: s.allowOutsideZones, address: s.address, city: s.city, postcode: s.postcode || null, defaultLang: s.defaultLang,
+        name: s.name, phone: s.phone, lat: s.lat, lng: s.lng, allowOutsideZones: s.allowOutsideZones, address: s.address, city: s.city, postcode: s.postcode || null, defaultLang: s.defaultLang, legalName: s.legalName || null, vatNumber: s.vatNumber || null, privacyEmail: s.privacyEmail || null,
         acceptingOrders: s.acceptingOrders,
         pausedUntil: s.pause.until ? new Date(s.pause.until) : null, pausedServices: s.pause.services, pauseMessage: s.pause.message || null,
         services: s.services, payments: s.payments,

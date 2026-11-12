@@ -285,7 +285,12 @@ export default function OrderApp({ data }: { data: PageData }) {
       {LANGS.map((l) => <option key={l} value={l}>{LANG_NAMES[l]}</option>)}
     </select>
   );
-  const imprint = R.imprint ? <div className="imprint">{R.imprint}</div> : null;
+  const imprint = (
+    <div className="imprint">
+      {R.imprint && <div>{R.imprint}</div>}
+      <div><a href={`/r/${R.slug}/privacy`}>{t("privacyLink")}</a> · <a href={`/r/${R.slug}/terms`}>{t("termsLink")}</a></div>
+    </div>
+  );
 
   const cartBox = (withBtn: boolean) => !validCart.length ? (
     <><h3 style={{ fontSize: 18 }}>{t("cart")}</h3><p className="muted">{t("cartEmpty")}</p></>
@@ -438,6 +443,7 @@ export default function OrderApp({ data }: { data: PageData }) {
             <button className="btn block" disabled={!ready || !minOk || sending} onClick={place}>
               <span>{sending ? t("sending") : t(`place${type ?? "PICKUP"}`)}</span> · <span className="num">{money(totals.total)}</span>
             </button>
+            <p className="legalnote">{t("legalSend")} <a href={`/r/${R.slug}/terms`} target="_blank" rel="noreferrer">{t("termsLink")}</a> · <a href={`/r/${R.slug}/privacy`} target="_blank" rel="noreferrer">{t("privacyLink")}</a></p>
           </div>
         </div></div>
       );

@@ -1,0 +1,60 @@
+name: Database backup
+
+# Every night a full copy of the database (pg_dump), encrypted, kept 30 days as a workflow artifact.
+# Needs two repository secrets (Settings → Secrets and variables → Actions):
+#   BACKUP_DATABASE_URL  the Neon connection string (the "direct", non-pooled one)
+#   BACKUP_PASSPHRASE    a long password; without it a backup can't be opened, keep it somewhere safe
+# Without the secrets the job just says so and stops. How to restore: docs/BACKUP.md
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check secrets
+        id: check
+        env:
+          URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$PASS" ]; then
+            echo "::warning::Backup skipped: add BACKUP_DATABASE_URL and BACKUP_PASSPHRASE in the repository secrets."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install PostgreSQL 17 client
+        if: steps.check.outputs.ok == 'true'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+      - name: Dump and encrypt
+        if: steps.check.outputs.ok == 'true'
+        env:
+          URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          name="menuto-$(date -u +%Y-%m-%d)"
+          /usr/lib/postgresql/17/bin/pg_dump --format=custom --no-owner --no-privileges "$URL" > "$name.dump"
+          test -s "$name.dump"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PASS" --symmetric --cipher-algo AES256 -o "$name.dump.gpg" "$name.dump"
+          rm "$name.dump"
+          ls -l "$name.dump.gpg"
+          echo "NAME=$name" >> "$GITHUB_ENV"
+      - name: Keep for 30 days
+        if: steps.check.outputs.ok == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NAME }}
+          path: ${{ env.NAME }}.dump.gpg
+          retention-days: 30

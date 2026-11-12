@@ -15,7 +15,7 @@ const PAYS = ["cash", "card_counter", "card_courier", "card_table"] as const;
 
 const D: Record<Lang, Record<string, string>> = {
   it: {
-    title: "Impostazioni", restaurant: "Ristorante", name: "Nome", phone: "Telefono", address: "Indirizzo", city: "Città", postcode: "CAP", defLang: "Lingua predefinita del menu",
+    title: "Impostazioni", restaurant: "Ristorante", name: "Nome", phone: "Telefono", address: "Indirizzo", city: "Città", postcode: "CAP", defLang: "Lingua predefinita del menu", legal: "Dati legali (privacy e condizioni)", legalHint: "Servono per l'informativa privacy e le condizioni d'ordine che i clienti vedono. Senza, le pagine mostrano «da completare».", legalName: "Ragione sociale", vatNumber: "Partita IVA", privacyEmail: "Email per la privacy", seePrivacy: "Vedi informativa privacy", seeTerms: "Vedi condizioni",
     online: "Ordini online", accepting: "Accetta ordini online", pause: "Pausa", pauseNow: "Metti in pausa", pauseFor: "Per", pauseMsg: "Messaggio per i clienti", resume: "Riprendi ordini",
     pausedUntil: "In pausa fino alle", allServices: "Tutti i servizi", m30: "30 minuti", h1: "1 ora", h2: "2 ore", rest: "Resto della giornata",
     services: "Servizi", PICKUP: "Ritiro", DELIVERY: "Consegna", DINEIN: "Al tavolo",
@@ -35,7 +35,7 @@ const D: Record<Lang, Record<string, string>> = {
     save: "Salva modifiche", discard: "Annulla modifiche", saved: "Salvato", unsaved: "Modifiche non salvate", err: "Salvataggio non riuscito", dupCoupon: "Due codici sconto uguali",
   },
   en: {
-    title: "Settings", restaurant: "Restaurant", name: "Name", phone: "Phone", address: "Address", city: "Town", postcode: "Postcode", defLang: "Default menu language",
+    title: "Settings", restaurant: "Restaurant", name: "Name", phone: "Phone", address: "Address", city: "Town", postcode: "Postcode", defLang: "Default menu language", legal: "Legal details (privacy and terms)", legalHint: "Used in the privacy notice and the order terms customers see. Without them the pages show “to be completed”.", legalName: "Company name", vatNumber: "VAT number", privacyEmail: "Privacy email", seePrivacy: "See privacy notice", seeTerms: "See terms",
     online: "Online ordering", accepting: "Accept online orders", pause: "Pause", pauseNow: "Pause orders", pauseFor: "For", pauseMsg: "Message for customers", resume: "Resume orders",
     pausedUntil: "Paused until", allServices: "All services", m30: "30 minutes", h1: "1 hour", h2: "2 hours", rest: "Rest of the day",
     services: "Services", PICKUP: "Pickup", DELIVERY: "Delivery", DINEIN: "At the table",
@@ -55,7 +55,7 @@ const D: Record<Lang, Record<string, string>> = {
     save: "Save changes", discard: "Discard changes", saved: "Saved", unsaved: "Unsaved changes", err: "Couldn't save", dupCoupon: "Two coupon codes are the same",
   },
   ar: {
-    title: "الإعدادات", restaurant: "المطعم", name: "الاسم", phone: "التليفون", address: "العنوان", city: "المدينة", postcode: "الرمز البريدي", defLang: "لغة المنيو الأساسية",
+    title: "الإعدادات", restaurant: "المطعم", name: "الاسم", phone: "التليفون", address: "العنوان", city: "المدينة", postcode: "الرمز البريدي", defLang: "لغة المنيو الأساسية", legal: "البيانات القانونية (الخصوصية والشروط)", legalHint: "بتظهر في صفحة الخصوصية وشروط الطلب اللي الزباين بيشوفوها. من غيرها الصفحات هتكتب «ناقص».", legalName: "اسم الشركة (Ragione sociale)", vatNumber: "الرقم الضريبي (Partita IVA)", privacyEmail: "إيميل الخصوصية", seePrivacy: "شوف صفحة الخصوصية", seeTerms: "شوف الشروط",
     online: "الطلبات أونلاين", accepting: "استقبال الطلبات أونلاين", pause: "إيقاف مؤقت", pauseNow: "وقّف الطلبات", pauseFor: "لمدة", pauseMsg: "رسالة للعملاء", resume: "رجّع الطلبات",
     pausedUntil: "متوقف لحد", allServices: "كل الخدمات", m30: "نص ساعة", h1: "ساعة", h2: "ساعتين", rest: "باقي اليوم",
     services: "الخدمات", PICKUP: "استلام", DELIVERY: "توصيل", DINEIN: "على الترابيزة",
@@ -156,6 +156,19 @@ export default function SettingsEditor({ restaurant, restaurants, initial, isPar
                 <button className="btn sm" onClick={pauseNow}>{k("pauseNow")}</button>
               </>
             )}
+          </div>
+        </section>
+
+        <section className="card"><h3>{k("legal")}</h3>
+          <p className="small muted" style={{ margin: 0 }}>{k("legalHint")}</p>
+          <div className="row2">
+            <Text id="r-legal" label={k("legalName")} value={s.legalName} onChange={(v) => edit((d) => { d.legalName = v; })} />
+            <Text id="r-vat" label={k("vatNumber")} value={s.vatNumber} onChange={(v) => edit((d) => { d.vatNumber = v; })} />
+            <Text id="r-privacy" label={k("privacyEmail")} value={s.privacyEmail} onChange={(v) => edit((d) => { d.privacyEmail = v; })} />
+          </div>
+          <div style={{ display: "flex", gap: 16 }}>
+            <a className="link small" href={`/r/${restaurant.slug}/privacy`} target="_blank" rel="noreferrer">{k("seePrivacy")}</a>
+            <a className="link small" href={`/r/${restaurant.slug}/terms`} target="_blank" rel="noreferrer">{k("seeTerms")}</a>
           </div>
         </section>
 

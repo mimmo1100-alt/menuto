@@ -177,6 +177,7 @@ textarea{min-height:70px;resize:vertical}
 .item.sold .plus{display:none}
 .opt[disabled]{opacity:.5;cursor:not-allowed}
 .imprint{text-align:center;font-size:12px;color:var(--muted);padding:24px 16px 100px}
+.imprint{display:grid;gap:6px}.imprint a{color:inherit}
 .langsel{border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:6px 8px;font-size:13px}
 
 /* opened from the website button: keep clear of the overlay close button */
@@ -184,3 +185,10 @@ textarea{min-height:70px;resize:vertical}
 /* ordering at the table */
 .tablepill{background:var(--accent);color:var(--accent-fg);border-color:transparent;font-weight:700;white-space:nowrap}
 .tablebar{display:grid;gap:2px;margin-top:8px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);border:1px solid var(--accent)}
+/* privacy notice and terms */
+.legal{max-width:720px;padding-block:20px 80px;display:grid;gap:6px;line-height:1.55}
+.legal h1{font-size:30px;margin-top:6px}
+.legal h2{font-size:19px;margin:18px 0 4px}
+.legal p{margin:4px 0}
+.legalnote{font-size:12px;color:var(--muted);text-align:center;margin:8px 0 0}
+.legalnote a{color:inherit}

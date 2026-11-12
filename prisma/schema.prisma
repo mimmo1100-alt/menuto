@@ -101,6 +101,10 @@ model Restaurant {
   taxRateBp       Int      @default(1000)
   notifyEmails    String[]
   emailOnReady    Boolean  @default(true)
+  /// legal details for the privacy notice and terms (GDPR art. 13): company name, VAT number, privacy contact
+  legalName       String?
+  vatNumber       String?
+  privacyEmail    String?
   /// email the day's sales summary to notifyEmails every morning
   dailyReport     Boolean  @default(true)
   partnerId       String?
