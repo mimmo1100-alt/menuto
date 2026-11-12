@@ -20,7 +20,7 @@ const K: Record<Lang, Record<string, string>> = {
 };
 const REASONS = ["rTooBusy", "rClosed", "rItem", "rArea", "rOther"];
 
-export default function KitchenBoard({ restaurant, restaurants }: { restaurant: R; restaurants: R[] }) {
+export default function KitchenBoard({ restaurant, restaurants, isPartner = false }: { restaurant: R; restaurants: R[]; isPartner?: boolean }) {
   const [lang, setLang] = useState<Lang>("it");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -103,7 +103,7 @@ export default function KitchenBoard({ restaurant, restaurants }: { restaurant: 
 
   return (
     <>
-      <DashNav lang={lang} current="orders" restaurant={restaurant} restaurants={restaurants} />
+      <DashNav lang={lang} current="orders" restaurant={restaurant} restaurants={restaurants} isPartner={isPartner} />
       <div className="wrap">
         <div className="kbar">
           <h2>{k("orders")} · {restaurant.name}</h2>

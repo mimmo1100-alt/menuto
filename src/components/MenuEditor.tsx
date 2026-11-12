@@ -58,7 +58,7 @@ const toEuro = (c: number) => (c / 100).toFixed(2);
 const toCents = (s: string) => { const n = Number(String(s).replace(",", ".")); return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) : 0; };
 const pick = (v: L3, lang: Lang) => v[lang] || v.it || v.en || v.ar;
 
-export default function MenuEditor({ restaurant, restaurants, initial }: { restaurant: R; restaurants: R[]; initial: MenuEdit }) {
+export default function MenuEditor({ restaurant, restaurants, initial, isPartner = false }: { restaurant: R; restaurants: R[]; initial: MenuEdit; isPartner?: boolean }) {
   const [lang, setLang] = useState<Lang>("it");
   const [m, setM] = useState<MenuEdit>(initial);
   const [saved, setSaved] = useState<MenuEdit>(initial);
@@ -90,7 +90,7 @@ export default function MenuEditor({ restaurant, restaurants, initial }: { resta
 
   return (
     <>
-      <DashNav lang={lang} current="menu" restaurant={restaurant} restaurants={restaurants} />
+      <DashNav lang={lang} current="menu" restaurant={restaurant} restaurants={restaurants} isPartner={isPartner} />
       <div className="wrap"><div className="adm">
         <h2 style={{ fontSize: 26 }}>{k("title")}</h2>
 

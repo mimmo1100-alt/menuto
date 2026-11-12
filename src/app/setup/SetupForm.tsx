@@ -11,7 +11,7 @@ export default function SetupForm() {
     if (String(fd.get("password")).length < 8) { setErr("La password deve avere almeno 8 caratteri."); return; }
     setBusy(true); setErr("");
     const res = await fetch("/api/setup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.fromEntries(fd)) });
-    if (res.ok) { location.href = "/dashboard/orders"; return; }
+    if (res.ok) { location.href = "/dashboard/partner"; return; }
     setErr(res.status === 409 ? "Configurazione già fatta: accedi." : "Controlla i campi e riprova.");
     setBusy(false);
   }

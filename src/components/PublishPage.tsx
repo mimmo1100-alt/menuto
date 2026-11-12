@@ -17,7 +17,7 @@ const D: Record<Lang, Record<string, string>> = {
     qr: "كود QR", qrHint: "اطبعه على الفلايرز والفاترينة والفواتير: لما حد يصوّره يفتح المنيو.", copy: "نسخ", copied: "اتنسخ", preview: "شكل الزرار", download: "نزّل الـ QR (SVG)" },
 };
 
-export default function PublishPage({ restaurant, restaurants, origin, link, qrSvg }: { restaurant: R; restaurants: R[]; origin: string; link: string; qrSvg: string }) {
+export default function PublishPage({ restaurant, restaurants, origin, link, qrSvg, isPartner = false }: { restaurant: R; restaurants: R[]; origin: string; link: string; qrSvg: string; isPartner?: boolean }) {
   const [lang, setLang] = useState<Lang>("it");
   const [copied, setCopied] = useState("");
   const k = (s: string) => D[lang][s] ?? s;
@@ -34,7 +34,7 @@ export default function PublishPage({ restaurant, restaurants, origin, link, qrS
   const qrUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qrSvg)}`;
   return (
     <>
-      <DashNav lang={lang} current="publish" restaurant={restaurant} restaurants={restaurants} />
+      <DashNav lang={lang} current="publish" restaurant={restaurant} restaurants={restaurants} isPartner={isPartner} />
       <div className="wrap"><div className="adm">
         <h2 style={{ fontSize: 26 }}>{k("title")}</h2>
         <section className="card"><h3>{k("link")}</h3>

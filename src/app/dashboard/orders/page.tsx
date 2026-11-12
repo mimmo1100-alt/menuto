@@ -4,7 +4,7 @@ import KitchenBoard from "@/components/KitchenBoard";
 export const dynamic = "force-dynamic";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ r?: string }> }) {
-  const { restaurants, current } = await dashContext((await searchParams).r);
+  const { restaurants, current, user } = await dashContext((await searchParams).r);
   if (!current) return <div className="wrap"><p className="empty">Nessun ristorante collegato a questo account.</p></div>;
-  return <KitchenBoard restaurant={current} restaurants={restaurants} />;
+  return <KitchenBoard isPartner={user.role === "PARTNER"} restaurant={current} restaurants={restaurants} />;
 }

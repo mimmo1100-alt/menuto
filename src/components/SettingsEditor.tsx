@@ -82,7 +82,7 @@ const toCents = (s: string) => { const n = Number(String(s).replace(",", ".")); 
 let seq = 0;
 const newId = () => `new_${Date.now().toString(36)}_${seq++}`;
 
-export default function SettingsEditor({ restaurant, restaurants, initial }: { restaurant: R; restaurants: R[]; initial: SettingsEdit & { uses: Record<string, number> } }) {
+export default function SettingsEditor({ restaurant, restaurants, initial, isPartner = false }: { restaurant: R; restaurants: R[]; initial: SettingsEdit & { uses: Record<string, number> }; isPartner?: boolean }) {
   const { uses: initialUses, ...init } = initial;
   const [lang, setLang] = useState<Lang>("it");
   const [s, setS] = useState<SettingsEdit>(init);
@@ -127,7 +127,7 @@ export default function SettingsEditor({ restaurant, restaurants, initial }: { r
 
   return (
     <>
-      <DashNav lang={lang} current="settings" restaurant={restaurant} restaurants={restaurants} />
+      <DashNav lang={lang} current="settings" restaurant={restaurant} restaurants={restaurants} isPartner={isPartner} />
       <div className="wrap"><div className="adm">
         <h2 style={{ fontSize: 26 }}>{k("title")}</h2>
 

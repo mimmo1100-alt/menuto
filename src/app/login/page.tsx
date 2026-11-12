@@ -10,7 +10,7 @@ export default function Login() {
     setBusy(true); setErr("");
     const fd = new FormData(e.currentTarget);
     const res = await fetch("/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: fd.get("email"), password: fd.get("password") }) });
-    if (res.ok) { location.href = "/dashboard/orders"; return; }
+    if (res.ok) { const j = await res.json(); location.href = j.role === "PARTNER" ? "/dashboard/partner" : "/dashboard/orders"; return; }
     setErr(res.status === 401 ? "Email o password non corretti." : "Accesso non riuscito. Riprova.");
     setBusy(false);
   }
