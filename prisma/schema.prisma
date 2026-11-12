@@ -100,6 +100,8 @@ model Restaurant {
   taxRateBp       Int      @default(1000)
   notifyEmails    String[]
   emailOnReady    Boolean  @default(true)
+  /// email the day's sales summary to notifyEmails every morning
+  dailyReport     Boolean  @default(true)
   partnerId       String?
   partner         Partner? @relation(fields: [partnerId], references: [id])
   createdAt       DateTime @default(now())
@@ -364,4 +366,13 @@ model EmailLog {
   createdAt DateTime @default(now())
 
   @@index([orderId])
+}
+
+/// One row per restaurant and local day once the end-of-day report was sent, so the cron never sends it twice.
+model DailyReportSent {
+  restaurantId String
+  ymd          String
+  sentAt       DateTime @default(now())
+
+  @@id([restaurantId, ymd])
 }

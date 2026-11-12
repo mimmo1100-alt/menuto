@@ -21,7 +21,7 @@ export const settingsSchema = z.object({
   slotMinutes: z.number().int().refine((n) => [15, 30, 45, 60, 90, 120, 180, 240, 360].includes(n)), hideAsap: z.boolean(),
   autoAccept: z.boolean(), prepPickupMin: z.number().int().min(1).max(600), prepDeliveryMin: z.number().int().min(1).max(600),
   taxIncluded: z.boolean(), taxName: z.string().trim().min(1).max(20), taxRateBp: z.number().int().min(0).max(5000),
-  notifyEmails: z.array(z.string().trim().email()).max(10), emailOnReady: z.boolean(),
+  notifyEmails: z.array(z.string().trim().email()).max(10), emailOnReady: z.boolean(), dailyReport: z.boolean(),
   hours: z.array(z.object({ service: svc.nullable(), days: z.array(z.number().int().min(0).max(6)).min(1), from: hhmm, to: hhmm })).max(50),
   specialDays: z.array(z.object({
     name: z.string().trim().min(1).max(25), dateFrom: ymd, dateTo: ymd, service: svc.nullable(), open: z.boolean(),
@@ -54,7 +54,7 @@ export async function loadSettings(restaurantId: string): Promise<SettingsEdit &
     payments: { PICKUP: (pay.PICKUP ?? []) as never, DELIVERY: (pay.DELIVERY ?? []) as never, DINEIN: (pay.DINEIN ?? []) as never },
     scheduledOrders: r.scheduledOrders, minNoticeMin: r.minNoticeMin, maxDaysAhead: r.maxDaysAhead, slotMinutes: r.slotMinutes, hideAsap: r.hideAsap,
     autoAccept: r.autoAccept, prepPickupMin: r.prepPickupMin, prepDeliveryMin: r.prepDeliveryMin,
-    taxIncluded: r.taxIncluded, taxName: r.taxName, taxRateBp: r.taxRateBp, notifyEmails: r.notifyEmails, emailOnReady: r.emailOnReady,
+    taxIncluded: r.taxIncluded, taxName: r.taxName, taxRateBp: r.taxRateBp, notifyEmails: r.notifyEmails, emailOnReady: r.emailOnReady, dailyReport: r.dailyReport,
     hours: r.hours.map((h) => ({ service: h.service, days: h.days, from: h.from, to: h.to })),
     specialDays: r.specialDays.map((s) => ({ name: s.name, dateFrom: s.dateFrom, dateTo: s.dateTo, service: s.service, open: s.open, from: s.from, to: s.to, message: s.message ?? "" })),
     zones: r.zones.map((z) => ({
@@ -80,7 +80,7 @@ export async function saveSettings(restaurantId: string, s: SettingsEdit) {
         services: s.services, payments: s.payments,
         scheduledOrders: s.scheduledOrders, minNoticeMin: s.minNoticeMin, maxDaysAhead: s.maxDaysAhead, slotMinutes: s.slotMinutes, hideAsap: s.hideAsap,
         autoAccept: s.autoAccept, prepPickupMin: s.prepPickupMin, prepDeliveryMin: s.prepDeliveryMin,
-        taxIncluded: s.taxIncluded, taxName: s.taxName, taxRateBp: s.taxRateBp, notifyEmails: s.notifyEmails, emailOnReady: s.emailOnReady,
+        taxIncluded: s.taxIncluded, taxName: s.taxName, taxRateBp: s.taxRateBp, notifyEmails: s.notifyEmails, emailOnReady: s.emailOnReady, dailyReport: s.dailyReport,
       },
     });
     await tx.openingHours.deleteMany({ where: { restaurantId } });
