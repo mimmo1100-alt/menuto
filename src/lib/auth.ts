@@ -40,3 +40,7 @@ export async function canManage(restaurantId: string) {
   if (!u) return null;
   return (await restaurantIdsFor(u)).includes(restaurantId) ? u : null;
 }
+
+export async function currentSessionId() {
+  return (await cookies()).get(COOKIE)?.value;
+}

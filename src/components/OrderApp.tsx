@@ -253,7 +253,7 @@ export default function OrderApp({ data }: { data: PageData }) {
       });
       const j = await res.json();
       if (!res.ok) {
-        setPlaceErr(t(j.error === "table" ? "errTable" : j.error === "closed" ? (T ? "dineClosed" : "errClosed") : j.error === "item" ? "errItem" : j.error === "min" ? "errMin" : "errGeneric"));
+        setPlaceErr(t(j.error === "too_many" ? "errTooMany" : j.error === "table" ? "errTable" : j.error === "closed" ? (T ? "dineClosed" : "errClosed") : j.error === "item" ? "errItem" : j.error === "min" ? "errMin" : "errGeneric"));
         setSending(false); return;
       }
       save(`${cartKey}.last`, validCart);

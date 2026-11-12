@@ -28,7 +28,7 @@ type NativeBridge = {
 declare global { interface Window { MenutoNative?: NativeBridge } }
 const nativeApp = () => (typeof window !== "undefined" && window.MenutoNative?.isNative?.() ? window.MenutoNative : null);
 
-export default function KitchenBoard({ restaurant, restaurants, isPartner = false }: { restaurant: R; restaurants: R[]; isPartner?: boolean }) {
+export default function KitchenBoard({ restaurant, restaurants, isPartner = false, staff = false }: { restaurant: R; restaurants: R[]; isPartner?: boolean; staff?: boolean }) {
   const [lang, setLang] = useState<Lang>("it");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -171,7 +171,7 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
 
   return (
     <>
-      <DashNav lang={lang} current="orders" restaurant={restaurant} restaurants={restaurants} isPartner={isPartner} />
+      <DashNav lang={lang} current="orders" restaurant={restaurant} restaurants={restaurants} isPartner={isPartner} staff={staff} />
       <div className="wrap">
         <div className="kbar">
           <h2>{k("orders")} · {restaurant.name}</h2>

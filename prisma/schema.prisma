@@ -52,6 +52,7 @@ model User {
   restaurantId String?
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   sessions     Session[]
+  resets       PasswordReset[]
   createdAt    DateTime    @default(now())
 }
 
@@ -394,4 +395,26 @@ model Table {
   orders       Order[]
 
   @@index([restaurantId])
+}
+
+/// "Forgot password" links. Only a SHA-256 of the token is stored; valid 1 hour, used once.
+model PasswordReset {
+  tokenHash String    @id
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Fixed-window counters for rate limiting public endpoints (works on serverless without Redis).
+model RateHit {
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@id([key, windowStart])
+  @@index([windowStart])
 }

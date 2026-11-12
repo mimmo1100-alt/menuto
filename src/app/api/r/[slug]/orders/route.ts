@@ -3,9 +3,14 @@ import { orderEmails } from "@/lib/order-emails";
 import { ZodError } from "zod";
 import { createOrder } from "@/lib/orders";
 import { OrderError } from "@/lib/pricing";
+import { clientIp, limitOr429 } from "@/lib/rate-limit";
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  // against fake-order spam. Generous: guests at the tables often share the restaurant's wifi (one IP).
+  const ip = clientIp(req);
+  const limited = await limitOr429([[`order:${ip}`, 20, 600], [`order-h:${ip}`, 60, 3600]]);
+  if (limited) return limited;
   try {
     const order = await createOrder(slug, await req.json());
     after(async () => {
