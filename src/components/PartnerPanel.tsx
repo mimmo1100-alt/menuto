@@ -13,7 +13,7 @@ type O = { id: string; number: number; status: string; type: string; total: numb
 
 const D: Record<Lang, Record<string, string>> = {
   it: {
-    title: "I tuoi ristoranti", last7: "Ultimi 7 giorni", orders: "Ordini", sales: "Vendite", missed: "Persi", lastOrder: "Ultimo ordine", never: "Mai",
+    title: "I tuoi ristoranti", launch: "Pronti per partire? Controlla cosa manca", last7: "Ultimi 7 giorni", orders: "Ordini", sales: "Vendite", missed: "Persi", lastOrder: "Ultimo ordine", never: "Mai",
     manage: "Gestisci", menuPage: "Menu", off: "Ordini online spenti", demo: "Demo", total: "Totale",
     add: "Aggiungi ristorante", name: "Nome", phone: "Telefono", address: "Indirizzo", city: "Città", ownerEmail: "Email del titolare (facoltativa)", ownerPass: "Password del titolare (almeno 8 caratteri)",
     create: "Crea ristorante", created: "Ristorante creato", emailTaken: "Questa email ha già un account.", needPass: "Serve una password per il titolare.", err: "Controlla i campi e riprova.",
@@ -22,7 +22,7 @@ const D: Record<Lang, Record<string, string>> = {
     branding: "Il tuo marchio", company: "Nome dell'azienda", imprint: "Scritta sotto il menu", imprintHint: "Appare in fondo alla pagina d'ordine di tutti i tuoi ristoranti.", save: "Salva", saved: "Salvato",
   },
   en: {
-    title: "Your restaurants", last7: "Last 7 days", orders: "Orders", sales: "Sales", missed: "Missed", lastOrder: "Last order", never: "Never",
+    title: "Your restaurants", launch: "Ready to go live? See what's missing", last7: "Last 7 days", orders: "Orders", sales: "Sales", missed: "Missed", lastOrder: "Last order", never: "Never",
     manage: "Manage", menuPage: "Menu", off: "Online ordering off", demo: "Demo", total: "Total",
     add: "Add restaurant", name: "Name", phone: "Phone", address: "Address", city: "Town", ownerEmail: "Owner's email (optional)", ownerPass: "Owner's password (at least 8 characters)",
     create: "Create restaurant", created: "Restaurant created", emailTaken: "This email already has an account.", needPass: "The owner needs a password.", err: "Check the fields and try again.",
@@ -31,7 +31,7 @@ const D: Record<Lang, Record<string, string>> = {
     branding: "Your brand", company: "Company name", imprint: "Line under the menu", imprintHint: "Shown at the bottom of every restaurant's ordering page.", save: "Save", saved: "Saved",
   },
   ar: {
-    title: "مطاعمك", last7: "آخر 7 أيام", orders: "الطلبات", sales: "المبيعات", missed: "فايتة", lastOrder: "آخر طلب", never: "ولا مرة",
+    title: "مطاعمك", launch: "جاهزين نبدأ؟ شوف إيه الناقص", last7: "آخر 7 أيام", orders: "الطلبات", sales: "المبيعات", missed: "فايتة", lastOrder: "آخر طلب", never: "ولا مرة",
     manage: "إدارة", menuPage: "المنيو", off: "الطلبات أونلاين مقفولة", demo: "تجريبي", total: "الإجمالي",
     add: "أضف مطعم", name: "الاسم", phone: "التليفون", address: "العنوان", city: "المدينة", ownerEmail: "إيميل صاحب المطعم (اختياري)", ownerPass: "باسورد صاحب المطعم (8 حروف على الأقل)",
     create: "اعمل المطعم", created: "المطعم اتعمل", emailTaken: "الإيميل ده عليه حساب بالفعل.", needPass: "صاحب المطعم محتاج باسورد.", err: "راجع الخانات وجرب تاني.",
@@ -86,6 +86,7 @@ export default function PartnerPanel({ initial }: { initial: Overview }) {
       <DashNav lang={lang} current="partner" restaurant={null} restaurants={[]} isPartner />
       <div className="wrap"><div className="adm">
         <h2 style={{ fontSize: 26 }}>{k("title")} · {data.partner.name}</h2>
+        <div><a className="btn sm" href="/dashboard/partner/launch">✓ {k("launch")}</a></div>
 
         <section className="card">
           <h3>{k("last7")}</h3>

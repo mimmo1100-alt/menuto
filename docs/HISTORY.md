@@ -55,4 +55,5 @@ The first chat (12 November 2026), in order. A new session should read this, the
 - Built the **go-live essentials**: password reset and change, Team page with staff accounts, rate limiting, privacy notice and order terms per restaurant, nightly encrypted database backup.
 - Payment methods like GloriaFood plus **Satispay**: cash, card/Bancomat with the POS, Satispay, all paid on receipt. Online payment stays "coming soon" in Settings (owner decision: not now).
 - **Automatic tests**: 20 Playwright tests + GitHub Actions. They found a bug from the Satispay change (Tables page limited to 2 payment methods), fixed. Login lockout now counts only failed attempts.
+- The owner asked Claude to carry on alone. Added the **go-live checklist** for moving the 6 restaurants, and suggested the official Vercel plugin so Claude can deploy once the owner signs in.
 - **Next:** the owner deploys on Vercel and tests on real phones and the Epson printer; then fix what that shows.

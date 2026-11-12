@@ -19,6 +19,7 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 | Go-live essentials | Forgot password (1-hour link) + change password; Team page (owner adds/removes owners and staff; staff see only Orders and Team); rate limits (login, reset, orders, quotes); privacy notice + order terms per restaurant (`/r/[slug]/privacy`, `/terms`, it/en) with legal details in Settings; nightly encrypted DB backup (GitHub Actions, `docs/BACKUP.md`) | API + Playwright; backup dump→encrypt→restore tested locally (not yet on GitHub: needs the secrets) |
 | Payment methods | Cash, card/Bancomat (at pickup, on delivery with the POS, at the table), Satispay (paid in the app on receipt), per service; "Online payment" shown in Settings as coming soon | Playwright customer checkout + kitchen; server refuses a method the restaurant turned off |
 | Automatic tests | 20 Playwright end-to-end tests in `tests/e2e` + GitHub Actions on every push (type check, lint, build, tests). Found a real bug on the first run (Tables page couldn't save with 3 payment methods) | Run twice locally, all green |
+| Go-live checklist | Partner → "Ready to go live?": per restaurant menu, hours, contacts, location, payments, delivery areas, order emails, legal details, owner login, test order, printing, tables, ordering on; plus system status after deploy | e2e test |
 | Hosting prep | Migrations on deploy, `/setup` first run | Production build on an empty DB |
 
 ## Waiting on the owner
