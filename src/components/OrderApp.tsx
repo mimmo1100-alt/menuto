@@ -74,6 +74,14 @@ export default function OrderApp({ data }: { data: PageData }) {
     const c = load<Contact | null>("menuto.contact", null);
     if (c) { setContact(c); }
   }, [cartKey, data.initialLang]);
+  // inside the website overlay, Escape closes it (unless an item window is open)
+  useEffect(() => {
+    if (window.parent === window) return;
+    document.body.classList.add("embedded");
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !document.querySelector(".scrim")) window.parent.postMessage("menuto:close", "*"); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   useEffect(() => { document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr"; }, [lang]);
   useEffect(() => { save(cartKey, cart); }, [cart, cartKey]);
 

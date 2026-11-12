@@ -178,3 +178,6 @@ textarea{min-height:70px;resize:vertical}
 .opt[disabled]{opacity:.5;cursor:not-allowed}
 .imprint{text-align:center;font-size:12px;color:var(--muted);padding:24px 16px 100px}
 .langsel{border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:6px 8px;font-size:13px}
+
+/* opened from the website button: keep clear of the overlay close button */
+@media (max-width:700px){.embedded .top .wrap{padding-right:max(60px,env(safe-area-inset-right,0px))}}
