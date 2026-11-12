@@ -15,6 +15,13 @@ npm run dev
 - Customer page: http://localhost:3000/r/trattoria-da-nino
 - Restaurant orders: http://localhost:3000/login — `owner@menuto.test` / `demo1234` (partner: `partner@menuto.test`)
 
+## Deploy (Vercel + Postgres)
+
+1. On vercel.com, import this GitHub repository and deploy.
+2. In the project, open Storage and connect a Postgres database (Neon or Supabase) to all environments, then redeploy. Migrations run during the build (`npm run vercel-build`).
+3. Open the site: the first visit goes to `/setup`, where you create your account; a demo restaurant is added. Setup works only once.
+4. Optional: add `RESEND_API_KEY` and `EMAIL_FROM` to send emails, and `PUBLIC_URL` if you use your own domain.
+
 ## What's in phase 1 so far
 
 - Menu with sizes, reusable option groups (min/max, required, preselected), half & half pizza, sold-out items/options, labels
