@@ -26,7 +26,7 @@ Read this first in every new session, then `docs/HISTORY.md` (how it started and
 
 ## Code map
 
-- Next.js 15 (App Router, TypeScript), Prisma 6 + PostgreSQL. Plain CSS: `src/app/r/order.css` (customer + shared tokens), `src/app/dashboard/dashboard.css`.
+- Next.js 15.5 (pinned to an exact patched version: Vercel refuses to deploy Next versions with known security holes), App Router, TypeScript, Prisma 6 + PostgreSQL. Plain CSS: `src/app/r/order.css` (customer + shared tokens), `src/app/dashboard/dashboard.css`.
 - `src/lib/`: `menu.ts` (public menu, availability of items), `pricing.ts` (server price check, totals), `orders.ts` (create order, missed orders), `availability.ts` + `time.ts` (hours in the restaurant time zone), `geo.ts` (delivery areas), `menu-edit.ts` / `settings-edit.ts` (dashboard load/save), `receipt.ts` (kitchen/customer receipts: HTML, text, ESC/POS), `email.ts` + `order-emails.ts`, `partner.ts`, `gloriafood-import.ts`, `tables.ts` (tables load/save, codes), `password.ts` (reset links, change), `team.ts` (owners/staff), `rate-limit.ts` (Postgres counters, `limitOr429`), `legal.ts` (privacy notice + order terms text), `reports.ts` (sales report for a date range) + `daily-report.ts` (morning email, cron `/api/cron/daily-report`), `demo.ts` (demo restaurant), `i18n.ts`, `auth.ts` (cookie sessions).
 - Money is in **cents** (integers). Names are `{it,en,ar}` JSON. Prices are always recalculated on the server.
 - Roles: PARTNER (all restaurants of their partner), OWNER, STAFF (orders only).
