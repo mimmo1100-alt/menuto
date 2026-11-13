@@ -97,3 +97,11 @@
 .checks .ok .mark{color:var(--ok)}
 .checks .bad .mark{color:var(--danger)}
 .checks .warn .mark{color:var(--warn)}
+/* start page */
+.home{max-width:480px;margin:8vh auto;display:grid;gap:16px;padding-bottom:40px}
+.home h1{font-size:40px;color:var(--accent)}
+.home-card{padding:18px;display:grid;gap:12px}
+.home-card h2{font-size:20px}
+.home-list{display:grid;gap:8px}
+.home-list .btn{justify-content:space-between}
+.home-city{font-weight:400;opacity:.85;font-size:14px}

@@ -24,3 +24,12 @@ test("only partners see the checklist", async ({ page }) => {
   await page.goto("/dashboard/partner/launch");
   await expect(page).toHaveURL(/\/dashboard\/orders/);
 });
+
+test("the start page links to each restaurant's ordering page and to the login", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: /Trattoria Da Nino/ }).click();
+  await expect(page).toHaveURL(/\/r\/trattoria-da-nino$/);
+  await page.goto("/");
+  await page.getByRole("link", { name: "Accedi" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+});
