@@ -11,7 +11,7 @@ export async function dashContext(r?: string, opts: { allowStaff?: boolean } = {
   if (!user) redirect("/login");
   if (user.role === "STAFF" && !opts.allowStaff) redirect(`/dashboard/orders${r ? `?r=${r}` : ""}`);
   const ids = await restaurantIdsFor(user);
-  const restaurants = await db.restaurant.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, slug: true, currency: true }, orderBy: { name: "asc" } });
+  const restaurants = await db.restaurant.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, slug: true, currency: true, timezone: true }, orderBy: { name: "asc" } });
   const current = restaurants.find((x) => x.id === r) ?? restaurants[0] ?? null;
   return { user, restaurants, current };
 }

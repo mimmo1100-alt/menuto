@@ -46,3 +46,27 @@ test("customer orders a pickup, the kitchen accepts and finishes it, the custome
   await ctx.close();
   expect((await restaurant()).slug).toBe(SLUG);
 });
+
+test("times are shown on the restaurant's clock, even on a phone set to another time zone", async ({ browser, request }) => {
+  const r = await restaurant();
+  const { apiOrder } = await import("./fixtures");
+  const id = (await (await apiOrder(request)).json()).id;
+  const owner = await browser.newContext({ timezoneId: "Asia/Tokyo" });
+  await login(owner.request);
+  expect((await owner.request.post(`/api/kitchen/${r.id}/orders/${id}`, { data: { action: "accept", prepMin: 20 } })).ok()).toBeTruthy();
+  const readyAt = (await db.order.findUniqueOrThrow({ where: { id } })).readyAt!;
+  const rome = readyAt.toLocaleTimeString("it-IT", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit" });
+  const tokyo = readyAt.toLocaleTimeString("it-IT", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit" });
+
+  const phone = await (await browser.newContext({ timezoneId: "Asia/Tokyo", locale: "it-IT" })).newPage();
+  await phone.goto(`/r/${SLUG}/o/${id}`);
+  await expect(phone.getByText("Ordine confermato")).toBeVisible();
+  await expect(phone.locator("body")).toContainText(rome);
+  await expect(phone.locator("body")).not.toContainText(tokyo);
+
+  const k = await owner.newPage();
+  await k.goto("/dashboard/orders");
+  await k.click('button:has-text("In preparazione")');
+  await expect(k.locator(".order").first()).toContainText(rome);
+  await owner.close();
+});

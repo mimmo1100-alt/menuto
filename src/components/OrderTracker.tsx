@@ -7,7 +7,7 @@ type O = {
   id: string; number: number; status: string; type: string; table: string | null; asap: boolean; fulfillAt: string | null; readyAt: string | null; rejectReason: string | null;
   payment: string; subtotal: number; discount: number; deliveryFee: number; tax: number; total: number;
   items: { name: Record<string, string>; sizeName: Record<string, string> | null; qty: number; options: { name: Record<string, string> }[]; total: number }[];
-  restaurant: { name: string; slug: string; currency: string; taxIncluded: boolean; taxName: string };
+  restaurant: { name: string; slug: string; currency: string; taxIncluded: boolean; taxName: string; timezone: string };
 };
 
 export default function OrderTracker({ slug, id, initialLang }: { slug: string; id: string; initialLang: Lang }) {
@@ -47,7 +47,8 @@ export default function OrderTracker({ slug, id, initialLang }: { slug: string; 
   if (!o) return <div className="wrap"><div className="track"><p className="empty">…</p></div></div>;
 
   const cur = o.restaurant.currency;
-  const fmtTime = (iso: string) => new Date(iso).toLocaleString(LOCALE[lang], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  // the restaurant's clock: a tourist's phone may still be on another time zone
+  const fmtTime = (iso: string) => new Date(iso).toLocaleString(LOCALE[lang], { timeZone: o?.restaurant.timezone ?? "Europe/Rome", weekday: "short", hour: "2-digit", minute: "2-digit" });
   const step = ({ PENDING: 1, ACCEPTED: 2, READY: 3, COMPLETED: 3 } as Record<string, number>)[o.status] ?? 0;
   const failed = ["REJECTED", "MISSED", "CANCELED"].includes(o.status);
 

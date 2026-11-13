@@ -11,7 +11,7 @@ type Order = {
   payment: string; comments: string | null; couponCode: string | null; subtotal: number; discount: number; deliveryFee: number; tax: number; total: number;
   rejectReason: string | null; respondBy: string | null; createdAt: string; items: Item[];
 };
-type R = { id: string; name: string; slug: string; currency: string };
+type R = { id: string; name: string; slug: string; currency: string; timezone?: string };
 
 const K: Record<Lang, Record<string, string>> = {
   it: { test: "Ordine di prova", testDone: "Ordine di prova creato", pause: "Pausa", resume: "Riprendi ordini", pausedUntil: "Ordini in pausa fino alle", m30: "30 min", h1: "1 ora", h2: "2 ore", stock: "Esauriti", available: "Disponibile", untilTomorrow: "Esaurito fino a domani", indefinite: "Esaurito", options: "Opzioni", printKitchen: "Stampa cucina", printCustomer: "Stampa cliente", settings: "Impostazioni app", autoPrint: "Stampa automatica quando accetti", apNone: "No", apKitchen: "Scontrino cucina", apCustomer: "Ricevuta cliente", apBoth: "Cucina + cliente", paper: "Carta", nativeOn: "App Android: suono e stampa funzionano anche a schermo spento.", printer: "Stampante Bluetooth", noPrinter: "Nessuna (abbina prima la stampante nelle impostazioni Bluetooth del telefono)", copies: "Copie", testPrint: "Stampa di prova", printed: "Stampato", printErr: "Stampa non riuscita", changeServer: "Cambia indirizzo server", appStatus: "Stato app", installHint: "Per usarla come app: menu del browser → Aggiungi a schermata Home. Tieni il telefono in carica e con il volume alto.", close: "Chiudi", orders: "Ordini", tPending: "Nuovi", tActive: "In preparazione", tDone: "Chiusi", soundOn: "Suono attivo", soundOff: "Attiva suono", acceptIn: "Accetta, pronto tra (minuti):", reject: "Rifiuta", cancel: "Annulla ordine", markReady: "Pronto", complete: "Consegnato", reason: "Motivo", noOrders: "Nessun ordine qui.", newOrder: "Nuovo ordine", queued: "Pre-ordine: suonerà all'apertura", respond: "Rispondi entro", maps: "Apri in Maps", copy: "Copia dati", copied: "Copiato", for: "Per", offline: "Connessione persa. Riprovo…", missed: "Perso" },
@@ -49,7 +49,10 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
   const k = (key: string) => K[lang][key] ?? key;
   const t = (key: string, v?: Record<string, string | number>) => ct(lang, key, v);
   const fmt = (c: number) => money(c, lang, restaurant.currency);
-  const time = (iso: string) => new Date(iso).toLocaleString(LOCALE[lang], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  // always the restaurant's clock, whatever time zone the device is set to
+  const tz = restaurant.timezone ?? "Europe/Rome";
+  const hm = (iso: string) => new Date(iso).toLocaleTimeString(LOCALE[lang], { timeZone: tz, hour: "2-digit", minute: "2-digit" });
+  const time = (iso: string) => new Date(iso).toLocaleString(LOCALE[lang], { timeZone: tz, weekday: "short", hour: "2-digit", minute: "2-digit" });
 
   // inside the Android app: hand the restaurant to the background watcher and read the app's own settings
   useEffect(() => {
@@ -181,7 +184,7 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
         </div>
         <div className="hrow" style={{ marginBottom: 12 }}>
           {pausedUntil ? (
-            <><span className="pill bad"><span className="dot" />{k("pausedUntil")} {pausedUntil.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+            <><span className="pill bad"><span className="dot" />{k("pausedUntil")} {pausedUntil.toLocaleTimeString(LOCALE[lang], { timeZone: tz, hour: "2-digit", minute: "2-digit" })}</span>
               <button className="btn sm" onClick={() => setPaused(0)}>{k("resume")}</button></>
           ) : (
             <><span className="small muted">{k("pause")}:</span>
@@ -281,7 +284,7 @@ export default function KitchenBoard({ restaurant, restaurants, isPartner = fals
                     <button className="link" onClick={() => copy(o)}>{k("copy")}</button>
                   </span>
                 </div>
-                <Actions o={o} k={k} t={t} act={act} accept={accept} />
+                <Actions o={o} k={k} t={t} act={act} accept={accept} hm={hm} />
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button className="btn sm ghost" onClick={() => print(o, "kitchen")}>{k("printKitchen")}</button>
                   <button className="btn sm ghost" onClick={() => print(o, "customer")}>{k("printCustomer")}</button>
@@ -301,7 +304,7 @@ function StatusPill({ o, k, t }: { o: Order; k: (s: string) => string; t: (s: st
   return <span className={`pill ${cls}`}>{o.status === "PENDING" ? <><span className="dot" />{k("newOrder")}</> : o.status === "MISSED" ? k("missed") : t(o.status)}</span>;
 }
 
-function Actions({ o, k, t, act, accept }: { o: Order; k: (s: string) => string; t: (s: string) => string; act: (o: Order, b: Record<string, unknown>) => void; accept: (o: Order, m: number) => void }) {
+function Actions({ o, k, t, act, accept, hm }: { o: Order; k: (s: string) => string; t: (s: string) => string; act: (o: Order, b: Record<string, unknown>) => void; accept: (o: Order, m: number) => void; hm: (iso: string) => string }) {
   const [reason, setReason] = useState(REASONS[0]);
   const reasonSelect = (
     <select aria-label={k("reason")} value={reason} onChange={(e) => setReason(e.target.value)} style={{ flex: 1 }}>
@@ -320,7 +323,7 @@ function Actions({ o, k, t, act, accept }: { o: Order; k: (s: string) => string;
   if (o.status === "ACCEPTED" || o.status === "READY") {
     return (
       <div style={{ display: "grid", gap: 8 }}>
-        {o.readyAt && <div className="small">{t("readyAt")} <b className="num">{new Date(o.readyAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</b></div>}
+        {o.readyAt && <div className="small">{t("readyAt")} <b className="num">{hm(o.readyAt)}</b></div>}
         {o.status === "ACCEPTED"
           ? <button className="btn ok block" onClick={() => act(o, { action: "ready" })}>{k("markReady")}</button>
           : <button className="btn block" onClick={() => act(o, { action: "complete" })}>{k("complete")}</button>}
