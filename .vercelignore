@@ -1,0 +1,9 @@
+# never upload local settings, builds or test output when deploying from the CLI
+.env
+.env.*
+!.env.example
+node_modules
+.next
+test-results
+playwright-report
+android-app
