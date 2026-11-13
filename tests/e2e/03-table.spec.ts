@@ -28,6 +28,7 @@ test("ordering from a table QR: only the name, the table reaches the kitchen", a
   await expect(k.locator(".order", { hasText: `#${o.number}` }).locator(".tablebadge")).toHaveText("Tavolo 5");
   const receipt = await (await ctx.request.get(`/api/kitchen/${r.id}/orders/${id}/receipt?f=text`)).text();
   expect(receipt).toContain("Tavolo 5");
+  expect(receipt).toContain("Carta o Bancomat al tavolo"); // payment on the kitchen ticket
   await ctx.close();
 });
 

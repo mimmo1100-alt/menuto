@@ -31,8 +31,10 @@ export function buildReceipt(o: Full, template: Template, lang: Lang, origin: st
     L.push({ k: "text", text: `${c("kitchen")} · ${t(lang, o.type).toUpperCase()}`, align: "center", bold: true });
     L.push({ k: "text", text: `#${o.number}`, align: "center", bold: true, size: 2 });
     L.push({ k: "text", text: `${c("for")}: ${when}`, align: "center", bold: true, size: o.asap ? 1 : 2 });
-    if (o.table) L.push({ k: "text", text: `${c("table")} ${o.table}`, align: "center", bold: true, size: 2 });
-    L.push({ k: "text", text: `${o.firstName} ${o.lastName}`, align: "center" });
+    if (o.table) L.push({ k: "text", text: /^\d+$/.test(o.table) ? `${c("table")} ${o.table}` : o.table, align: "center", bold: true, size: 2 });
+    L.push({ k: "text", text: `${o.firstName} ${o.lastName}`.trim(), align: "center" });
+    // payment on the kitchen ticket too: it travels in the bag, so the driver knows whether to take the card machine
+    L.push({ k: "text", text: `${c("paid")}: ${t(lang, o.payment)}`, align: "center", bold: true });
     L.push({ k: "rule" });
     for (const it of o.items) {
       const name = it.internalName || tr(it.name, lang);
@@ -53,7 +55,7 @@ export function buildReceipt(o: Full, template: Template, lang: Lang, origin: st
   L.push({ k: "text", text: r.phone, align: "center" });
   L.push({ k: "rule" });
   L.push({ k: "text", text: `${t(lang, o.type).toUpperCase()} · ${when}`, align: "center", bold: true, size: 2 });
-  if (o.table) L.push({ k: "text", text: `${c("table")} ${o.table}`, align: "center", bold: true, size: 2 });
+  if (o.table) L.push({ k: "text", text: /^\d+$/.test(o.table) ? `${c("table")} ${o.table}` : o.table, align: "center", bold: true, size: 2 });
   L.push({ k: "text", text: `${t(lang, o.payment)}`, align: "center", bold: true });
   L.push({ k: "rule" });
   L.push({ k: "pair", left: c("order"), right: `#${o.number}`, bold: true });
