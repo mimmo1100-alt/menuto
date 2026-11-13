@@ -24,7 +24,7 @@ Updated: 12 November 2026. Target: the 6 restaurants on Menuto in March 2027 (Gl
 
 ## Waiting on the owner
 
-1. **Deploy**: vercel.com → import `menuto` → Storage: add Neon Postgres (**region Europe / Frankfurt**, for GDPR) → Redeploy → open the site → `/setup`.
+1. ~~Deploy~~ Done 13 Nov 2026: https://menuto-two.vercel.app (Vercel project `menuto`, Neon `menuto-db`). Still to do: the owner opens `/setup` and creates their account; connect the GitHub repo in Vercel (Settings → Git) so every push deploys by itself (today deploys are done with `npx vercel deploy --prod` from this repo); turn on 2FA on the Vercel account.
 2. Install the APK from the latest GitHub release on the restaurant phone; pair the Epson printer; test print.
 3. GloriaFood "Fetch Menu" key of the demo restaurant GUSTO GIUSTO, to test the import for real.
 4. Later: Resend account (emails), domain, Stripe (online payments).
